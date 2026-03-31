@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " AB",
+    " CDC",
+    "BA "
+  ],
+  "key": {
+    "A": { "item": "minecraft:amethyst_shard" },
+    "B": { "item": "minecraft:string" },
+    "C": { "item": "minecraft:ender_pearl" },
+    "D": { "item": "minecraft:gold_ingot" }
+  },
+  "result": {
+    "item": "ruinaarcana:vinculo_astral",
+    "count": 1
+  }
+}

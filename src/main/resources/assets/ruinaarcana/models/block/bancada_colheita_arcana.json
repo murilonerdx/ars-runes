@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "ruinaarcana:block/bancada_colheita_arcana_top",
+    "bottom": "ruinaarcana:block/bancada_colheita_arcana_bottom",
+    "side": "ruinaarcana:block/bancada_colheita_arcana_side"
+  }
+}

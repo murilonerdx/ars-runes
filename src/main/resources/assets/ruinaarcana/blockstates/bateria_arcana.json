@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "charge_stage=0": {
+      "model": "ruinaarcana:block/bateria_arcana_stage0"
+    },
+    "charge_stage=1": {
+      "model": "ruinaarcana:block/bateria_arcana_stage1"
+    },
+    "charge_stage=2": {
+      "model": "ruinaarcana:block/bateria_arcana_stage2"
+    },
+    "charge_stage=3": {
+      "model": "ruinaarcana:block/bateria_arcana_stage3"
+    },
+    "charge_stage=4": {
+      "model": "ruinaarcana:block/bateria_arcana_stage4"
+    }
+  }
+}

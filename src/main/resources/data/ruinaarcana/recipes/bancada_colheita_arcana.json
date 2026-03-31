@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": { "item": "minecraft:polished_deepslate" },
+    "B": { "item": "minecraft:amethyst_shard" },
+    "C": { "item": "minecraft:hay_block" },
+    "D": { "item": "ruinaarcana:altar_ritual" },
+    "E": { "item": "ruinaarcana:catalisador_magico" }
+  },
+  "result": {
+    "item": "ruinaarcana:bancada_colheita_arcana",
+    "count": 1
+  }
+}
