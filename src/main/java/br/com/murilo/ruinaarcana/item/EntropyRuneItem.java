@@ -48,11 +48,15 @@ public class EntropyRuneItem extends Item implements ArcaneChargeable {
 
         int activationCost = RuinaArcanaConfig.VALUES.runeActivationCost.get();
         if (ArcaneChargeHelper.getCharge(stack) < activationCost) {
-            player.displayClientMessage(Component.translatable("message.ruinaarcana.rune_not_enough_charge", activationCost), true);
+            player.displayClientMessage(
+                    Component.translatable("message.ruinaarcana.rune_not_enough_charge", activationCost),
+                    true
+            );
             return InteractionResultHolder.fail(stack);
         }
 
         ArcaneChargeHelper.removeCharge(stack, activationCost);
+
         long activeUntil = level.getGameTime() + (RuinaArcanaConfig.VALUES.runeActiveSeconds.get() * 20L);
         stack.getOrCreateTag().putLong(ACTIVE_UNTIL_KEY, activeUntil);
 
@@ -81,9 +85,18 @@ public class EntropyRuneItem extends Item implements ArcaneChargeable {
             return;
         }
 
+        int pulseCost = Math.max(1, RuinaArcanaConfig.VALUES.runePulseEnergyCost.get());
+
+        if (ArcaneChargeHelper.getCharge(stack) < pulseCost) {
+            deactivate(stack);
+            player.displayClientMessage(Component.translatable("message.ruinaarcana.rune_faded"), true);
+            return;
+        }
+
+        ArcaneChargeHelper.removeCharge(stack, pulseCost);
         TemporalFieldLogic.pulse(serverLevel, player);
 
-        if (level.getGameTime() + interval >= getActiveUntil(stack)) {
+        if (ArcaneChargeHelper.getCharge(stack) <= 0 || level.getGameTime() + interval >= getActiveUntil(stack)) {
             deactivate(stack);
             player.displayClientMessage(Component.translatable("message.ruinaarcana.rune_faded"), true);
         }
@@ -97,7 +110,9 @@ public class EntropyRuneItem extends Item implements ArcaneChargeable {
         tooltip.add(Component.translatable("tooltip.ruinaarcana.runa_da_ruina.line1").withStyle(ChatFormatting.DARK_PURPLE));
         tooltip.add(Component.translatable("tooltip.ruinaarcana.runa_da_ruina.line2").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.ruinaarcana.arcane_charge", charge, maxCharge).withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.translatable(isActive(stack, level) ? "tooltip.ruinaarcana.runa_da_ruina.active" : "tooltip.ruinaarcana.runa_da_ruina.idle")
+        tooltip.add(Component.translatable(isActive(stack, level)
+                        ? "tooltip.ruinaarcana.runa_da_ruina.active"
+                        : "tooltip.ruinaarcana.runa_da_ruina.idle")
                 .withStyle(isActive(stack, level) ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
     }
 

@@ -1,6 +1,7 @@
 package br.com.murilo.ruinaarcana.block.entity;
 
 import br.com.murilo.ruinaarcana.config.RuinaArcanaConfig;
+import br.com.murilo.ruinaarcana.magic.ArcaneChargeHelper;
 import br.com.murilo.ruinaarcana.magic.ArcaneEnergyNetworkHelper;
 import br.com.murilo.ruinaarcana.menu.ArcaneHarvestBenchMenu;
 import br.com.murilo.ruinaarcana.registry.ModBlockEntities;
@@ -46,6 +47,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
     private static final String RUNE_INVENTORY_KEY = "RuneInventory";
     private static final String LEGACY_RUNE_KEY = "InstalledRune";
     private static final String LINKED_POS_KEY = "LinkedInventoryPos";
+    private static final String CATALYST_LINKED_KEY = "CatalystLinked";
 
     private final ItemStackHandler inventory = new ItemStackHandler(18) {
         @Override
@@ -100,6 +102,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
     };
 
     private int charge;
+    private boolean catalystLinked;
 
     @Nullable
     private BlockPos linkedInventoryPos;
@@ -110,6 +113,95 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
 
     public static ArcaneHarvestBenchBlockEntity createClientDummy(BlockPos pos) {
         return new ArcaneHarvestBenchBlockEntity(pos, ModBlocks.BANCADA_COLHEITA_ARCANA.get().defaultBlockState());
+    }
+
+    public boolean installCatalystLink(ItemStack catalystStack) {
+        if (catalystLinked || catalystStack.isEmpty() || !catalystStack.is(ModItems.CATALISADOR_MAGICO.get())) {
+            return false;
+        }
+
+        catalystLinked = true;
+
+        int initialCharge = ArcaneChargeHelper.getCharge(catalystStack);
+        if (initialCharge > 0) {
+            charge = Math.min(getMaxCharge(), charge + initialCharge);
+        }
+
+        setChanged();
+        return true;
+    }
+
+    public boolean installRune(ItemStack stack) {
+        if (hasInstalledRune() || stack.isEmpty() || !stack.is(ModItems.RUNA_DA_RUINA.get())) {
+            return false;
+        }
+
+        ItemStack copy = stack.copy();
+        copy.setCount(1);
+        runeInventory.setStackInSlot(0, copy);
+        setChanged();
+        return true;
+    }
+
+    public ItemStack removeInstalledRune() {
+        ItemStack removed = runeInventory.getStackInSlot(0).copy();
+        runeInventory.setStackInSlot(0, ItemStack.EMPTY);
+        setChanged();
+        return removed;
+    }
+
+    public boolean hasInstalledRune() {
+        return !runeInventory.getStackInSlot(0).isEmpty();
+    }
+
+    private ItemStack getInstalledRune() {
+        return runeInventory.getStackInSlot(0);
+    }
+
+    private boolean hasGrowthRuneInstalled() {
+        ItemStack rune = getInstalledRune();
+        return !rune.isEmpty() && rune.is(ModItems.RUNA_DA_RUINA.get());
+    }
+
+    private boolean hasUsableGrowthRune() {
+        ItemStack rune = getInstalledRune();
+        if (rune.isEmpty() || !rune.is(ModItems.RUNA_DA_RUINA.get())) {
+            return false;
+        }
+
+        int runePulseCost = Math.max(1, RuinaArcanaConfig.VALUES.runePulseEnergyCost.get());
+        return ArcaneChargeHelper.getCharge(rune) >= runePulseCost;
+    }
+
+    private boolean consumeInstalledRuneCharge() {
+        ItemStack rune = getInstalledRune();
+        if (rune.isEmpty() || !rune.is(ModItems.RUNA_DA_RUINA.get())) {
+            return false;
+        }
+
+        int runePulseCost = Math.max(1, RuinaArcanaConfig.VALUES.runePulseEnergyCost.get());
+        if (ArcaneChargeHelper.getCharge(rune) < runePulseCost) {
+            return false;
+        }
+
+        ArcaneChargeHelper.removeCharge(rune, runePulseCost);
+        setChanged();
+        return true;
+    }
+
+    private void pullLinkedCatalystEnergy() {
+        if (!catalystLinked) {
+            return;
+        }
+
+        int room = Math.max(0, getMaxCharge() - charge);
+        if (room <= 0) {
+            return;
+        }
+
+        int gain = Math.max(1, RuinaArcanaConfig.VALUES.catalystSkyChargePerPulse.get());
+        charge = Math.min(getMaxCharge(), charge + Math.min(room, gain));
+        setChanged();
     }
 
     public void serverTick() {
@@ -125,24 +217,28 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
             return;
         }
 
-        if (!hasInstalledRune()) {
-            return;
-        }
+        // energia do vínculo com catalisador
+        pullLinkedCatalystEnergy();
 
+        // energia de baterias próximas
         pullEnergy(serverLevel);
 
         if (charge <= 0) {
             return;
         }
 
-        // Primeiro faz o que gera resultado real
+        // lógica principal da bancada
         harvestCrops(serverLevel);
         harvestAnimals(serverLevel);
         collectLooseDrops(serverLevel);
         pushToLinkedInventory(serverLevel);
 
-        // Só depois acelera crescimento
-        accelerateGrowth(serverLevel);
+        // a runa instalada executa o "pulso" dentro da máquina
+        if (hasGrowthRuneInstalled() && hasUsableGrowthRune()) {
+            if (consumeInstalledRuneCharge()) {
+                accelerateGrowth(serverLevel);
+            }
+        }
 
         setChanged();
     }
@@ -170,16 +266,14 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
 
     private void accelerateGrowth(ServerLevel level) {
         int radius = RuinaArcanaConfig.VALUES.harvestBenchWorkRadius.get();
-        int cost = Math.max(1, RuinaArcanaConfig.VALUES.harvestBenchCropEnergyCost.get() / 2);
-
-        // deixa pequeno para não drenar tudo antes de produzir
-        int budget = 4;
+        int machineCost = Math.max(1, RuinaArcanaConfig.VALUES.harvestBenchCropEnergyCost.get() / 2);
+        int budget = 12;
 
         for (BlockPos pos : BlockPos.betweenClosed(
                 worldPosition.offset(-radius, -1, -radius),
                 worldPosition.offset(radius, 2, radius))) {
 
-            if (budget <= 0 || charge < cost) {
+            if (budget <= 0 || charge < machineCost) {
                 return;
             }
 
@@ -189,7 +283,13 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
             }
 
             state.randomTick(level, pos, level.random);
-            consumeCharge(cost);
+
+            if (charge >= machineCost * 2) {
+                state.randomTick(level, pos, level.random);
+                consumeCharge(machineCost);
+            }
+
+            consumeCharge(machineCost);
             budget--;
         }
     }
@@ -405,29 +505,6 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
         setChanged();
     }
 
-    public boolean installRune(ItemStack stack) {
-        if (hasInstalledRune() || stack.isEmpty() || !stack.is(ModItems.RUNA_DA_RUINA.get())) {
-            return false;
-        }
-
-        ItemStack copy = stack.copy();
-        copy.setCount(1);
-        runeInventory.setStackInSlot(0, copy);
-        setChanged();
-        return true;
-    }
-
-    public ItemStack removeInstalledRune() {
-        ItemStack removed = runeInventory.getStackInSlot(0).copy();
-        runeInventory.setStackInSlot(0, ItemStack.EMPTY);
-        setChanged();
-        return removed;
-    }
-
-    public boolean hasInstalledRune() {
-        return !runeInventory.getStackInSlot(0).isEmpty();
-    }
-
     public ItemStackHandler getStorageHandler() {
         return inventory;
     }
@@ -500,6 +577,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
         tag.putInt(CHARGE_KEY, charge);
         tag.put(ITEMS_KEY, inventory.serializeNBT());
         tag.put(RUNE_INVENTORY_KEY, runeInventory.serializeNBT());
+        tag.putBoolean(CATALYST_LINKED_KEY, catalystLinked);
 
         if (linkedInventoryPos != null) {
             tag.put(LINKED_POS_KEY, NbtUtils.writeBlockPos(linkedInventoryPos));
@@ -511,6 +589,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
         super.load(tag);
 
         charge = Math.max(0, tag.getInt(CHARGE_KEY));
+        catalystLinked = tag.getBoolean(CATALYST_LINKED_KEY);
         inventory.deserializeNBT(tag.getCompound(ITEMS_KEY));
 
         if (tag.contains(RUNE_INVENTORY_KEY)) {

@@ -1,32 +1,14 @@
-# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
-dist/
+# Gradle / build
+.gradle/
 build/
-.eggs/
-*.egg
-.idea
 
-# Env
-.env
-.venv/
-venv/
+# Minecraft Forge runtime
+run/
+logs/
+crash-reports/
 
-# IDE
-.vscode/
+# IDE / OS
 .idea/
-*.swp
-
-# OS
+.vscode/
 Thumbs.db
 .DS_Store
-
-# Project
-books/
-*.pdf
-*.epub
-app/rag/eval/eval_results.json
-data/rag.db
-app/data/rag.db
-data/rag.db

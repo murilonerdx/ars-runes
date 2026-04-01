@@ -1,10 +1,7 @@
 package br.com.murilo.ruinaarcana.registry;
 
 import br.com.murilo.ruinaarcana.RuinaArcanaMod;
-import br.com.murilo.ruinaarcana.block.ArcaneBatteryBlock;
-import br.com.murilo.ruinaarcana.block.ArcaneHarvestBenchBlock;
-import br.com.murilo.ruinaarcana.block.RitualAltarBlock;
-import br.com.murilo.ruinaarcana.block.SigilBlock;
+import br.com.murilo.ruinaarcana.block.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -48,6 +45,13 @@ public final class ModBlocks {
                             .sound(SoundType.WOOL),
                     new Vector3f(0.45F, 0.85F, 1.0F)
             ));
+
+    public static final RegistryObject<Block> CATALISADOR_DE_RUNAS = BLOCKS.register("catalisador_de_runas",
+            () -> new RuneCatalystBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F, 5.0F)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> 6)
+                    .requiresCorrectToolForDrops()));
 
     public static final RegistryObject<Block> SIGILO_CRESCIMENTO = BLOCKS.register("sigilo_crescimento",
             () -> new SigilBlock(

@@ -1,12 +1,15 @@
 package br.com.murilo.ruinaarcana.block;
 
 import br.com.murilo.ruinaarcana.block.entity.ArcaneBatteryBlockEntity;
+import br.com.murilo.ruinaarcana.registry.ModItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -49,14 +52,49 @@ public class ArcaneBatteryBlock extends BaseEntityBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
+
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (!(blockEntity instanceof ArcaneBatteryBlockEntity battery)) {
+            return InteractionResult.PASS;
+        }
+
+        ItemStack heldItem = player.getItemInHand(hand);
+
+        // Se clicar com o catalisador mágico, tenta vincular a bateria
+        if (heldItem.is(ModItems.CATALISADOR_MAGICO.get())) {
+            boolean linked = battery.installCatalystLink(heldItem);
+
+            if (linked) {
+                if (!player.getAbilities().instabuild) {
+                    heldItem.shrink(1);
+                }
+
+                player.displayClientMessage(
+                        Component.translatable("message.ruinaarcana.catalisador_magico.linked"),
+                        true
+                );
+                return InteractionResult.CONSUME;
+            }
+
+            player.displayClientMessage(
+                    Component.translatable("message.ruinaarcana.catalisador_magico.already_linked"),
+                    true
+            );
+            return InteractionResult.CONSUME;
+        }
+
+        // Se não estiver usando catalisador, abre a interface normal
+        if (player instanceof ServerPlayer serverPlayer) {
             MenuProvider provider = getMenuProvider(state, level, pos);
             if (provider != null) {
                 NetworkHooks.openScreen(serverPlayer, provider, pos);
             }
         }
 
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return InteractionResult.CONSUME;
     }
 
     @Override

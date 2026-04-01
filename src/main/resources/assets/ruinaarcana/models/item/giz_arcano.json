@@ -1,6 +1,45 @@
 {
-  "parent": "minecraft:item/generated",
+  "texture_size": [
+    16,
+    16
+  ],
   "textures": {
-    "layer0": "ruinaarcana:item/giz_arcano"
+    "0": "ruinaarcana:item/giz_arcano",
+    "particle": "ruinaarcana:item/giz_arcano"
+  },
+  "elements": [
+    {
+      "from": [11, 5, 11],
+      "to": [12, 11, 12],
+      "rotation": {"angle": 0, "axis": "y", "origin": [3, 0, 2]},
+      "faces": {
+        "north": {"uv": [0, 0, 1, 6], "texture": "#0"},
+        "east": {"uv": [1, 0, 2, 6], "texture": "#0"},
+        "south": {"uv": [2, 0, 3, 6], "texture": "#0"},
+        "west": {"uv": [3, 0, 4, 6], "texture": "#0"},
+        "up": {"uv": [5, 1, 4, 0], "texture": "#0"},
+        "down": {"uv": [5, 1, 4, 2], "texture": "#0"}
+      }
+    }
+  ],
+  "display": {
+    "thirdperson_righthand": {
+      "translation": [-4.25, 1.25, -2]
+    },
+    "thirdperson_lefthand": {
+      "translation": [3.5, 0, -1.5]
+    },
+    "firstperson_righthand": {
+      "rotation": [-22.25, 0, 0],
+      "translation": [-5, 3.75, 0]
+    },
+    "firstperson_lefthand": {
+      "translation": [0, 4.5, 0]
+    },
+    "gui": {
+      "rotation": [-7.37, -52.49, -5.84],
+      "translation": [-1.5, 0.25, 0],
+      "scale": [2.11133, 1.59375, 1]
+    }
   }
 }

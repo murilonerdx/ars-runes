@@ -2,9 +2,11 @@ package br.com.murilo.ruinaarcana.block.entity;
 
 import br.com.murilo.ruinaarcana.block.ArcaneBatteryBlock;
 import br.com.murilo.ruinaarcana.config.RuinaArcanaConfig;
+import br.com.murilo.ruinaarcana.magic.ArcaneChargeHelper;
 import br.com.murilo.ruinaarcana.menu.ArcaneBatteryMenu;
 import br.com.murilo.ruinaarcana.registry.ModBlockEntities;
 import br.com.murilo.ruinaarcana.registry.ModBlocks;
+import br.com.murilo.ruinaarcana.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -13,15 +15,14 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class ArcaneBatteryBlockEntity extends BlockEntity implements MenuProvider {
 
     private static final String CHARGE_KEY = "StoredCharge";
-    private static final Logger log = LoggerFactory.getLogger(ArcaneBatteryBlockEntity.class);
+    private static final String CATALYST_LINKED_KEY = "CatalystLinked";
 
     private final ContainerData menuData = new ContainerData() {
         @Override
@@ -47,6 +48,7 @@ public class ArcaneBatteryBlockEntity extends BlockEntity implements MenuProvide
     };
 
     private int charge;
+    private boolean catalystLinked;
 
     public ArcaneBatteryBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.BATERIA_ARCANA.get(), pos, blockState);
@@ -57,6 +59,28 @@ public class ArcaneBatteryBlockEntity extends BlockEntity implements MenuProvide
                 pos,
                 ModBlocks.BATERIA_ARCANA.get().defaultBlockState()
         );
+    }
+
+    public boolean installCatalystLink(ItemStack catalystStack) {
+        if (catalystLinked || catalystStack.isEmpty() || !catalystStack.is(ModItems.CATALISADOR_MAGICO.get())) {
+            return false;
+        }
+
+        catalystLinked = true;
+
+        int initialCharge = ArcaneChargeHelper.getCharge(catalystStack);
+        if (initialCharge > 0) {
+            addCharge(initialCharge);
+        } else {
+            syncChargeStage();
+        }
+
+        setChanged();
+        return true;
+    }
+
+    public boolean hasCatalystLink() {
+        return catalystLinked;
     }
 
     public void serverTick() {
@@ -74,13 +98,20 @@ public class ArcaneBatteryBlockEntity extends BlockEntity implements MenuProvide
             return;
         }
 
-        int passiveGain = Math.max(1, RuinaArcanaConfig.VALUES.batterySkyChargePerPulse.get());
-
-        if (charge < max) {
-            addCharge(passiveGain);
-        } else {
+        // Sem catalisador vinculado, a bateria só mantém o estado visual.
+        if (!catalystLinked) {
             syncChargeStage();
+            return;
         }
+
+        if (charge >= max) {
+            syncChargeStage();
+            return;
+        }
+
+        // Recarrega infinitamente após o vínculo do catalisador.
+        int linkedGain = Math.max(1, RuinaArcanaConfig.VALUES.catalystSkyChargePerPulse.get());
+        addCharge(linkedGain);
     }
 
     public int extractCharge(int requested) {
@@ -183,11 +214,13 @@ public class ArcaneBatteryBlockEntity extends BlockEntity implements MenuProvide
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.putInt(CHARGE_KEY, charge);
+        tag.putBoolean(CATALYST_LINKED_KEY, catalystLinked);
     }
 
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
         this.charge = Math.max(0, tag.getInt(CHARGE_KEY));
+        this.catalystLinked = tag.getBoolean(CATALYST_LINKED_KEY);
     }
 }

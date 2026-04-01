@@ -58,5 +58,11 @@
   "screen.ruinaarcana.arcane_harvest_bench.unlinked": "Vínculo astral: ausente",
   "screen.ruinaarcana.arcane_harvest_bench.stored": "Slots ocupados: %s",
   "screen.ruinaarcana.arcane_battery.charge": "Carga acumulada: %s / %s",
-  "screen.ruinaarcana.arcane_battery.hint": "Carrega lentamente sob o céu aberto."
+  "screen.ruinaarcana.arcane_battery.hint": "Carrega lentamente sob o céu aberto.",
+  "message.ruinaarcana.catalisador_magico.already_linked": "O catalisador já está linkado",
+  "message.ruinaarcana.catalisador_magico.linked": "Catalisador linkado",
+  "message.ruinaarcana.rune_catalyst.rune_inserted": "Runa foi inserida",
+  "message.ruinaarcana.rune_catalyst.already_has_rune": "Já possui uma runa linkada",
+  "message.ruinaarcana.rune_catalyst.rune_removed": "A Runa foi removida",
+  "message.ruinaarcana.rune_catalyst.charge_status": "Status mudou"
 }

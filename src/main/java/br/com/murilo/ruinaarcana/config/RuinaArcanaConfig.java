@@ -38,7 +38,7 @@ public final class RuinaArcanaConfig {
         public final ForgeConfigSpec.IntValue batteryTransferPerPulse;
         public final ForgeConfigSpec.IntValue batteryTransferRadius;
         public final ForgeConfigSpec.IntValue batteryPulseIntervalTicks;
-
+        public final ForgeConfigSpec.IntValue runePulseEnergyCost;
         public final ForgeConfigSpec.IntValue harvestBenchMaxCharge;
         public final ForgeConfigSpec.IntValue harvestBenchPullPerPulse;
         public final ForgeConfigSpec.IntValue harvestBenchBatteryRadius;
@@ -50,8 +50,23 @@ public final class RuinaArcanaConfig {
         public final ForgeConfigSpec.IntValue harvestBenchTeleportItemsPerPulse;
         public final ForgeConfigSpec.IntValue harvestBenchAnimalKeepCount;
 
+        public final ForgeConfigSpec.IntValue runeCatalystPulseIntervalTicks;
+        public final ForgeConfigSpec.IntValue runeCatalystChargePerPulse;
+        public final ForgeConfigSpec.IntValue runeCatalystBatteryRadius;
+
         private Values(ForgeConfigSpec.Builder builder) {
             builder.push("runa_da_ruina");
+            runeCatalystPulseIntervalTicks = builder
+                    .defineInRange("runeCatalystPulseIntervalTicks", 20, 1, 200);
+
+            runeCatalystChargePerPulse = builder
+                    .defineInRange("runeCatalystChargePerPulse", 10, 1, 1000);
+
+            runeCatalystBatteryRadius = builder
+                    .defineInRange("runeCatalystBatteryRadius", 6, 1, 32);
+            this.runePulseEnergyCost = builder
+                    .comment("Energia gasta por pulso da Runa da Ruína")
+                    .defineInRange("runePulseEnergyCost", 2, 1, 1000);
             runeRadius = builder.comment("Raio do campo temporal da runa.").defineInRange("radius", 4, 1, 12);
             runePulseIntervalTicks = builder.comment("Intervalo entre pulsos da runa.").defineInRange("pulseIntervalTicks", 10, 1, 200);
             runeExtraRandomTicks = builder.comment("Random ticks extras em blocos próximos.").defineInRange("extraRandomTicks", 3, 0, 64);

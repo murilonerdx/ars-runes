@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "ruinaarcana:block/catalisador_de_runas_top",
+    "bottom": "ruinaarcana:block/catalisador_de_runas_bottom",
+    "side": "ruinaarcana:block/catalisador_de_runas_side"
+  }
+}

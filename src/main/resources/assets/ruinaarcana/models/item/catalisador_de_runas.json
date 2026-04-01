@@ -1,0 +1,6 @@
+{
+  "parent": "ruinaarcana:block/catalisador_de_runas",
+  "textures": {
+    "layer0": "ruinaarcana:block/catalisador_de_runas"
+  }
+}

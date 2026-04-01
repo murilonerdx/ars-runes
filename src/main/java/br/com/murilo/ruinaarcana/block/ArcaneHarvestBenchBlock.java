@@ -1,12 +1,15 @@
 package br.com.murilo.ruinaarcana.block;
 
 import br.com.murilo.ruinaarcana.block.entity.ArcaneHarvestBenchBlockEntity;
+import br.com.murilo.ruinaarcana.registry.ModItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -44,21 +47,75 @@ public class ArcaneHarvestBenchBlock extends BaseEntityBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (!(blockEntity instanceof ArcaneHarvestBenchBlockEntity bench)) {
+            return InteractionResult.PASS;
+        }
+
+        ItemStack heldItem = player.getItemInHand(hand);
+
+        // deixa o próprio item tratar o clique com catalisador mágico
+        if (heldItem.is(ModItems.CATALISADOR_MAGICO.get())) {
+            return InteractionResult.PASS;
+        }
+
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
+
+        // instala a runa na bancada
+        if (heldItem.is(ModItems.RUNA_DA_RUINA.get())) {
+            if (bench.installRune(heldItem)) {
+                if (!player.getAbilities().instabuild) {
+                    heldItem.shrink(1);
+                }
+
+                player.displayClientMessage(
+                        Component.literal("Runa da Ruína instalada na bancada."),
+                        true
+                );
+            } else {
+                player.displayClientMessage(
+                        Component.literal("A bancada já possui uma runa instalada."),
+                        true
+                );
+            }
+            return InteractionResult.CONSUME;
+        }
+
+        // shift + mão vazia remove a runa
+        if (player.isShiftKeyDown() && heldItem.isEmpty()) {
+            ItemStack removed = bench.removeInstalledRune();
+            if (!removed.isEmpty()) {
+                if (!player.addItem(removed)) {
+                    player.drop(removed, false);
+                }
+
+                player.displayClientMessage(
+                        Component.literal("Runa removida da bancada."),
+                        true
+                );
+                return InteractionResult.CONSUME;
+            }
+        }
+
+        // abre GUI normal
+        if (player instanceof ServerPlayer serverPlayer) {
             MenuProvider provider = getMenuProvider(state, level, pos);
             if (provider != null) {
                 NetworkHooks.openScreen(serverPlayer, provider, pos);
             }
         }
 
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return InteractionResult.CONSUME;
     }
 
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!state.is(newState.getBlock())) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof ArcaneHarvestBenchBlockEntity bench && level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            if (blockEntity instanceof ArcaneHarvestBenchBlockEntity bench
+                    && level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
                 bench.dropContents(serverLevel);
             }
         }

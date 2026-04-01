@@ -32,6 +32,9 @@ public final class ModItems {
                     .stacksTo(1)
                     .rarity(Rarity.RARE)));
 
+    public static final RegistryObject<Item> CATALISADOR_DE_RUNAS = ITEMS.register("catalisador_de_runas",
+            () -> new BlockItem(ModBlocks.CATALISADOR_DE_RUNAS.get(), new Item.Properties()));
+
     public static final RegistryObject<Item> RUNA_DA_RUINA = ITEMS.register("runa_da_ruina",
             () -> new EntropyRuneItem(new Item.Properties()
                     .stacksTo(1)

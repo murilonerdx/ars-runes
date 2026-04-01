@@ -23,9 +23,12 @@ public final class ModCreativeModeTabs {
                         output.accept(ModItems.CATALISADOR_MAGICO.get());
                         output.accept(ModItems.RUNA_DA_RUINA.get());
                         output.accept(ModItems.VINCULO_ASTRAL.get());
+
                         output.accept(ModItems.ALTAR_RITUAL.get());
                         output.accept(ModItems.BATERIA_ARCANA.get());
                         output.accept(ModItems.BANCADA_COLHEITA_ARCANA.get());
+                        output.accept(ModItems.CATALISADOR_DE_RUNAS.get());
+
                         output.accept(ModItems.SIGILO_CELESTE.get());
                         output.accept(ModItems.SIGILO_CRESCIMENTO.get());
                         output.accept(ModItems.SIGILO_GRAVITACIONAL.get());

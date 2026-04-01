@@ -58,5 +58,11 @@
   "screen.ruinaarcana.arcane_harvest_bench.unlinked": "Astral link: missing",
   "screen.ruinaarcana.arcane_harvest_bench.stored": "Used slots: %s",
   "screen.ruinaarcana.arcane_battery.charge": "Stored charge: %s / %s",
-  "screen.ruinaarcana.arcane_battery.hint": "Charges slowly under open sky."
+  "screen.ruinaarcana.arcane_battery.hint": "Charges slowly under open sky.",
+  "message.ruinaarcana.catalisador_magico.already_linked": "Magic Catalyser already linked",
+  "message.ruinaarcana.catalisador_magico.linked": "Magic Catalyser linked",
+  "message.ruinaarcana.rune_catalyst.rune_inserted": "Rune Inserted",
+  "message.ruinaarcana.rune_catalyst.already_has_rune": "Already has rune",
+  "message.ruinaarcana.rune_catalyst.rune_removed": "Rune removed",
+  "message.ruinaarcana.rune_catalyst.charge_status": "Status charge"
 }
