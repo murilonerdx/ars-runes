@@ -84,4 +84,22 @@ public final class TemporalFieldLogic {
 
         level.sendParticles(ParticleTypes.PORTAL, cx, cy + 0.3D, cz, 18, radius * 0.2D, 0.2D, radius * 0.2D, 0.03D);
     }
+
+    public static void pulse(ServerLevel level, BlockPos center) {
+        int radius = RuinaArcanaConfig.VALUES.harvestBenchWorkRadius.get();
+
+        for (BlockPos pos : BlockPos.betweenClosed(
+                center.offset(-radius, -1, -radius),
+                center.offset(radius, 2, radius))) {
+
+            BlockState state = level.getBlockState(pos);
+
+            if (!state.isRandomlyTicking()) {
+                continue;
+            }
+
+            state.randomTick(level, pos, level.random);
+            state.randomTick(level, pos, level.random);
+        }
+    }
 }

@@ -3,6 +3,7 @@ package br.com.murilo.ruinaarcana.block.entity;
 import br.com.murilo.ruinaarcana.config.RuinaArcanaConfig;
 import br.com.murilo.ruinaarcana.magic.ArcaneChargeHelper;
 import br.com.murilo.ruinaarcana.magic.ArcaneEnergyNetworkHelper;
+import br.com.murilo.ruinaarcana.magic.TemporalFieldLogic;
 import br.com.murilo.ruinaarcana.menu.ArcaneHarvestBenchMenu;
 import br.com.murilo.ruinaarcana.registry.ModBlockEntities;
 import br.com.murilo.ruinaarcana.registry.ModBlocks;
@@ -12,6 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
@@ -48,6 +50,10 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
     private static final String LEGACY_RUNE_KEY = "InstalledRune";
     private static final String LINKED_POS_KEY = "LinkedInventoryPos";
     private static final String CATALYST_LINKED_KEY = "CatalystLinked";
+    private static final String WORK_RANGE_KEY = "WorkRange";
+
+    private static final int MIN_WORK_RANGE = 1;
+    private static final int MAX_WORK_RANGE = 8;
 
     private final ItemStackHandler inventory = new ItemStackHandler(18) {
         @Override
@@ -84,24 +90,27 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
                 case 1 -> getMaxCharge();
                 case 2 -> hasLinkedInventory() ? 1 : 0;
                 case 3 -> getStoredStacks();
+                case 4 -> workRange;
                 default -> 0;
             };
         }
 
         @Override
         public void set(int index, int value) {
-            if (index == 0) {
-                charge = value;
+            switch (index) {
+                case 0 -> charge = Math.max(0, value);
+                case 4 -> workRange = Mth.clamp(value, MIN_WORK_RANGE, MAX_WORK_RANGE);
             }
         }
 
         @Override
         public int getCount() {
-            return 4;
+            return 5;
         }
     };
 
     private int charge;
+    private int workRange;
     private boolean catalystLinked;
 
     @Nullable
@@ -109,10 +118,30 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
 
     public ArcaneHarvestBenchBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.BANCADA_COLHEITA_ARCANA.get(), pos, blockState);
+        this.workRange = getDefaultWorkRange();
     }
 
     public static ArcaneHarvestBenchBlockEntity createClientDummy(BlockPos pos) {
         return new ArcaneHarvestBenchBlockEntity(pos, ModBlocks.BANCADA_COLHEITA_ARCANA.get().defaultBlockState());
+    }
+
+    private int getDefaultWorkRange() {
+        return Mth.clamp(RuinaArcanaConfig.VALUES.harvestBenchWorkRadius.get(), MIN_WORK_RANGE, MAX_WORK_RANGE);
+    }
+
+    public int getWorkRange() {
+        return workRange;
+    }
+
+    public boolean changeWorkRange(int delta) {
+        int newValue = Mth.clamp(workRange + delta, MIN_WORK_RANGE, MAX_WORK_RANGE);
+        if (newValue == workRange) {
+            return false;
+        }
+
+        workRange = newValue;
+        setChanged();
+        return true;
     }
 
     public boolean installCatalystLink(ItemStack catalystStack) {
@@ -217,30 +246,42 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
             return;
         }
 
-        // energia do vínculo com catalisador
         pullLinkedCatalystEnergy();
-
-        // energia de baterias próximas
         pullEnergy(serverLevel);
 
         if (charge <= 0) {
             return;
         }
 
-        // lógica principal da bancada
         harvestCrops(serverLevel);
         harvestAnimals(serverLevel);
         collectLooseDrops(serverLevel);
         pushToLinkedInventory(serverLevel);
-
-        // a runa instalada executa o "pulso" dentro da máquina
-        if (hasGrowthRuneInstalled() && hasUsableGrowthRune()) {
-            if (consumeInstalledRuneCharge()) {
-                accelerateGrowth(serverLevel);
-            }
-        }
+        triggerInstalledRunePulse(serverLevel);
 
         setChanged();
+    }
+
+    private void triggerInstalledRunePulse(ServerLevel level) {
+        if (!hasGrowthRuneInstalled()) {
+            return;
+        }
+
+        if (!hasUsableGrowthRune()) {
+            return;
+        }
+
+        int machineCost = Math.max(1, RuinaArcanaConfig.VALUES.harvestBenchCropEnergyCost.get() / 2);
+        if (charge < machineCost) {
+            return;
+        }
+
+        if (!consumeInstalledRuneCharge()) {
+            return;
+        }
+
+        consumeCharge(machineCost);
+        TemporalFieldLogic.pulse(level, worldPosition);
     }
 
     private void pullEnergy(ServerLevel level) {
@@ -265,7 +306,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
     }
 
     private void accelerateGrowth(ServerLevel level) {
-        int radius = RuinaArcanaConfig.VALUES.harvestBenchWorkRadius.get();
+        int radius = getWorkRange();
         int machineCost = Math.max(1, RuinaArcanaConfig.VALUES.harvestBenchCropEnergyCost.get() / 2);
         int budget = 12;
 
@@ -295,7 +336,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
     }
 
     private void harvestCrops(ServerLevel level) {
-        int radius = RuinaArcanaConfig.VALUES.harvestBenchWorkRadius.get();
+        int radius = getWorkRange();
         int cost = RuinaArcanaConfig.VALUES.harvestBenchCropEnergyCost.get();
 
         for (BlockPos pos : BlockPos.betweenClosed(
@@ -355,7 +396,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
             return;
         }
 
-        int radius = RuinaArcanaConfig.VALUES.harvestBenchWorkRadius.get();
+        int radius = getWorkRange();
         int keepCount = RuinaArcanaConfig.VALUES.harvestBenchAnimalKeepCount.get();
         AABB area = new AABB(worldPosition).inflate(radius + 0.5D);
 
@@ -392,7 +433,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
     }
 
     private void collectLooseDrops(ServerLevel level) {
-        int radius = RuinaArcanaConfig.VALUES.harvestBenchWorkRadius.get();
+        int radius = getWorkRange();
         AABB area = new AABB(worldPosition).inflate(radius + 0.75D);
 
         for (ItemEntity itemEntity : level.getEntitiesOfClass(
@@ -575,6 +616,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.putInt(CHARGE_KEY, charge);
+        tag.putInt(WORK_RANGE_KEY, workRange);
         tag.put(ITEMS_KEY, inventory.serializeNBT());
         tag.put(RUNE_INVENTORY_KEY, runeInventory.serializeNBT());
         tag.putBoolean(CATALYST_LINKED_KEY, catalystLinked);
@@ -589,6 +631,10 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
         super.load(tag);
 
         charge = Math.max(0, tag.getInt(CHARGE_KEY));
+        workRange = tag.contains(WORK_RANGE_KEY)
+                ? Mth.clamp(tag.getInt(WORK_RANGE_KEY), MIN_WORK_RANGE, MAX_WORK_RANGE)
+                : getDefaultWorkRange();
+
         catalystLinked = tag.getBoolean(CATALYST_LINKED_KEY);
         inventory.deserializeNBT(tag.getCompound(ITEMS_KEY));
 

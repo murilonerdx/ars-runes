@@ -2,7 +2,6 @@ package br.com.murilo.ruinaarcana.menu;
 
 import br.com.murilo.ruinaarcana.block.entity.ArcaneHarvestBenchBlockEntity;
 import br.com.murilo.ruinaarcana.registry.ModBlocks;
-import br.com.murilo.ruinaarcana.registry.ModItems;
 import br.com.murilo.ruinaarcana.registry.ModMenus;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -11,125 +10,99 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandler;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class ArcaneHarvestBenchMenu extends AbstractContainerMenu {
 
-    private static final int RUNE_SLOT = 0;
-    private static final int STORAGE_SLOT_START = 1;
-    private static final int STORAGE_SLOT_END = 19;
-    private static final int PLAYER_INV_START = 19;
-    private static final int PLAYER_INV_END = 46;
+    public static final int BUTTON_RANGE_DOWN = 0;
+    public static final int BUTTON_RANGE_UP = 1;
 
-    private final ContainerLevelAccess access;
+    private static final int RUNE_SLOT = 0;
+    private static final int STORAGE_START = 1;
+    private static final int STORAGE_END = 19;
+    private static final int MACHINE_SLOT_COUNT = 19;
+
+    private final ArcaneHarvestBenchBlockEntity blockEntity;
+    private final Level level;
     private final ContainerData data;
 
-    public ArcaneHarvestBenchMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buffer) {
-        this(containerId, playerInventory, findBlockEntity(playerInventory, buffer.readBlockPos()), createFallbackData());
+    public ArcaneHarvestBenchMenu(int containerId, Inventory playerInventory, FriendlyByteBuf extraData) {
+        this(containerId, playerInventory, getBlockEntity(playerInventory, extraData), new SimpleContainerData(5));
     }
 
-    public ArcaneHarvestBenchMenu(int containerId, Inventory playerInventory, ArcaneHarvestBenchBlockEntity bench, ContainerData data) {
+    public ArcaneHarvestBenchMenu(int containerId, Inventory playerInventory, ArcaneHarvestBenchBlockEntity blockEntity, ContainerData data) {
         super(ModMenus.ARCANE_HARVEST_BENCH.get(), containerId);
-        this.access = bench.getLevel() == null ? ContainerLevelAccess.NULL : ContainerLevelAccess.create(bench.getLevel(), bench.getBlockPos());
+        this.blockEntity = blockEntity;
+        this.level = playerInventory.player.level();
         this.data = data;
 
-        addSlot(new RuneSlot(bench.getRuneHandler(), 0, 26, 36));
+        checkContainerDataCount(data, 5);
+        addDataSlots(data);
 
-        IItemHandler storageHandler = bench.getStorageHandler();
-        int slot = 0;
+        addMachineSlots();
+        addPlayerInventory(playerInventory);
+        addPlayerHotbar(playerInventory);
+    }
+
+    private static ArcaneHarvestBenchBlockEntity getBlockEntity(Inventory playerInventory, FriendlyByteBuf extraData) {
+        BlockPos pos = extraData.readBlockPos();
+        BlockEntity blockEntity = playerInventory.player.level().getBlockEntity(pos);
+
+        if (!(blockEntity instanceof ArcaneHarvestBenchBlockEntity bench)) {
+            throw new IllegalStateException("Block entity inválida em " + pos);
+        }
+
+        return bench;
+    }
+
+    private void addMachineSlots() {
+        this.addSlot(new SlotItemHandler(blockEntity.getRuneHandler(), 0, 18, 34));
+
+        int storageStartX = 62;
+        int storageStartY = 18;
+
         for (int row = 0; row < 2; row++) {
             for (int col = 0; col < 9; col++) {
-                addSlot(new ReadOnlySlot(storageHandler, slot++, 62 + col * 18, 18 + row * 18));
+                int slotIndex = col + (row * 9);
+                int x = storageStartX + (col * 18);
+                int y = storageStartY + (row * 18);
+                this.addSlot(new SlotItemHandler(blockEntity.getStorageHandler(), slotIndex, x, y));
             }
         }
+    }
+
+    private void addPlayerInventory(Inventory inventory) {
+        int startX = 36;
+        int startY = 103;
 
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
+                this.addSlot(new Slot(
+                        inventory,
+                        col + row * 9 + 9,
+                        startX + col * 18,
+                        startY + row * 18
+                ));
             }
         }
+    }
+
+    private void addPlayerHotbar(Inventory inventory) {
+        int startX = 36;
+        int y = 161;
 
         for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(playerInventory, col, 8 + col * 18, 142));
+            this.addSlot(new Slot(inventory, col, startX + col * 18, y));
         }
-
-        addDataSlots(data);
     }
 
-    private static ArcaneHarvestBenchBlockEntity findBlockEntity(Inventory playerInventory, BlockPos pos) {
-        if (playerInventory.player.level().getBlockEntity(pos) instanceof ArcaneHarvestBenchBlockEntity bench) {
-            return bench;
-        }
-        return ArcaneHarvestBenchBlockEntity.createClientDummy(pos);
-    }
-
-    private static ContainerData createFallbackData() {
-        return new ContainerData() {
-            private final int[] values = new int[4];
-
-            @Override
-            public int get(int index) {
-                return values[index];
-            }
-
-            @Override
-            public void set(int index, int value) {
-                values[index] = value;
-            }
-
-            @Override
-            public int getCount() {
-                return values.length;
-            }
-        };
-    }
-
-    @Override
-    public boolean stillValid(Player player) {
-        return stillValid(access, player, ModBlocks.BANCADA_COLHEITA_ARCANA.get());
-    }
-
-    @Override
-    public ItemStack quickMoveStack(Player player, int index) {
-        ItemStack quickMoved = ItemStack.EMPTY;
-        Slot slot = this.slots.get(index);
-
-        if (!slot.hasItem()) {
-            return ItemStack.EMPTY;
-        }
-
-        ItemStack raw = slot.getItem();
-        quickMoved = raw.copy();
-
-        if (index < PLAYER_INV_START) {
-            if (!moveItemStackTo(raw, PLAYER_INV_START, PLAYER_INV_END, true)) {
-                return ItemStack.EMPTY;
-            }
-        } else {
-            if (raw.is(ModItems.RUNA_DA_RUINA.get())) {
-                if (!moveItemStackTo(raw, RUNE_SLOT, RUNE_SLOT + 1, false)) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-                return ItemStack.EMPTY;
-            }
-        }
-
-        if (raw.isEmpty()) {
-            slot.set(ItemStack.EMPTY);
-        } else {
-            slot.setChanged();
-        }
-
-        if (raw.getCount() == quickMoved.getCount()) {
-            return ItemStack.EMPTY;
-        }
-
-        slot.onTake(player, raw);
-        return quickMoved;
+    public BlockPos getBenchPos() {
+        return blockEntity.getBlockPos();
     }
 
     public int getCharge() {
@@ -140,42 +113,81 @@ public class ArcaneHarvestBenchMenu extends AbstractContainerMenu {
         return data.get(1);
     }
 
-    public int getLinkedFlag() {
-        return data.get(2);
+    public boolean isLinked() {
+        return data.get(2) == 1;
     }
 
     public int getStoredStacks() {
         return data.get(3);
     }
 
-    public boolean isLinked() {
-        return getLinkedFlag() == 1;
+    public int getWorkRange() {
+        return data.get(4);
     }
 
-    private static final class RuneSlot extends SlotItemHandler {
-        private RuneSlot(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
-            super(itemHandler, index, xPosition, yPosition);
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        if (player.level().isClientSide) {
+            return true;
         }
 
-        @Override
-        public boolean mayPlace(ItemStack stack) {
-            return stack.is(ModItems.RUNA_DA_RUINA.get());
-        }
-
-        @Override
-        public int getMaxStackSize() {
-            return 1;
-        }
+        return switch (id) {
+            case BUTTON_RANGE_DOWN -> blockEntity.changeWorkRange(-1);
+            case BUTTON_RANGE_UP -> blockEntity.changeWorkRange(1);
+            default -> false;
+        };
     }
 
-    private static final class ReadOnlySlot extends SlotItemHandler {
-        private ReadOnlySlot(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
-            super(itemHandler, index, xPosition, yPosition);
+    @Override
+    public ItemStack quickMoveStack(Player player, int index) {
+        ItemStack copied = ItemStack.EMPTY;
+        Slot slot = this.slots.get(index);
+
+        if (slot == null || !slot.hasItem()) {
+            return ItemStack.EMPTY;
         }
 
-        @Override
-        public boolean mayPlace(ItemStack stack) {
-            return false;
+        ItemStack stack = slot.getItem();
+        copied = stack.copy();
+
+        if (index < MACHINE_SLOT_COUNT) {
+            if (!this.moveItemStackTo(stack, MACHINE_SLOT_COUNT, this.slots.size(), true)) {
+                return ItemStack.EMPTY;
+            }
+        } else {
+            if (blockEntity.getRuneHandler().isItemValid(0, stack)) {
+                if (!this.moveItemStackTo(stack, RUNE_SLOT, RUNE_SLOT + 1, false)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if (!this.moveItemStackTo(stack, STORAGE_START, STORAGE_END, false)) {
+                return ItemStack.EMPTY;
+            }
         }
+
+        if (stack.isEmpty()) {
+            slot.set(ItemStack.EMPTY);
+        } else {
+            slot.setChanged();
+        }
+
+        if (stack.getCount() == copied.getCount()) {
+            return ItemStack.EMPTY;
+        }
+
+        slot.onTake(player, stack);
+        return copied;
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        if (level.isClientSide) {
+            return true;
+        }
+
+        return stillValid(
+                ContainerLevelAccess.create(level, blockEntity.getBlockPos()),
+                player,
+                ModBlocks.BANCADA_COLHEITA_ARCANA.get()
+        );
     }
 }
