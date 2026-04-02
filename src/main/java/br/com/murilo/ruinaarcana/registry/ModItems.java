@@ -77,7 +77,22 @@ public final class ModItems {
     public static final RegistryObject<Item> CODEX_RUNICO = ITEMS.register("codex_runico",
             () -> new CodexRunicoItem(new Item.Properties()
                     .stacksTo(1)
-                    .rarity(Rarity.UNCOMMON)));
+                    .rarity(Rarity.UNCOMMON), CodexRunicoItem.CodexType.GERAL));
+
+    public static final RegistryObject<Item> CODEX_RITUAIS = ITEMS.register("codex_rituais",
+            () -> new CodexRunicoItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.RARE), CodexRunicoItem.CodexType.RITUAIS));
+
+    public static final RegistryObject<Item> CODEX_ARTEFATOS = ITEMS.register("codex_artefatos",
+            () -> new CodexRunicoItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.RARE), CodexRunicoItem.CodexType.ARTEFATOS));
+
+    public static final RegistryObject<Item> CODEX_PROGRESSAO = ITEMS.register("codex_progressao",
+            () -> new CodexRunicoItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.RARE), CodexRunicoItem.CodexType.PROGRESSAO));
 
     public static final RegistryObject<Item> ALTAR_RITUAL = ITEMS.register("altar_ritual",
             () -> new BlockItem(ModBlocks.ALTAR_RITUAL.get(), new Item.Properties().rarity(Rarity.UNCOMMON)));
@@ -96,6 +111,13 @@ public final class ModItems {
 
     public static final RegistryObject<Item> SIGILO_GRAVITACIONAL = ITEMS.register("sigilo_gravitacional",
             () -> new BlockItem(ModBlocks.SIGILO_GRAVITACIONAL.get(), new Item.Properties()));
+
+
+    public static final RegistryObject<Item> SIGILO_TRANSMUTACAO = ITEMS.register("sigilo_transmutacao",
+            () -> new BlockItem(ModBlocks.SIGILO_TRANSMUTACAO.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> SIGILO_ESSENCIA = ITEMS.register("sigilo_essencia",
+            () -> new BlockItem(ModBlocks.SIGILO_ESSENCIA.get(), new Item.Properties()));
 
     public static boolean isFarmRune(ItemStack stack) {
         return stack.is(RUNA_DA_RUINA.get())

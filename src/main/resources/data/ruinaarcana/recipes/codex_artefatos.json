@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " A ",
+    "CBC",
+    " L "
+  ],
+  "key": {
+    "A": { "item": "ruinaarcana:bateria_arcana" },
+    "C": { "item": "minecraft:copper_ingot" },
+    "B": { "item": "ruinaarcana:codex_runico" },
+    "L": { "item": "ruinaarcana:vinculo_astral" }
+  },
+  "result": { "item": "ruinaarcana:codex_artefatos" }
+}

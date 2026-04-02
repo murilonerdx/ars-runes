@@ -1,0 +1,10 @@
+{
+  "name": "Codex de Artefatos",
+  "landing_text": "Itens avançados, função de cada bloco e como craftar.",
+  "version": 1,
+  "creative_tab": "ruinaarcana:ruina_arcana",
+  "use_resource_pack": true,
+  "show_progress": false,
+  "model": "patchouli:book_blue",
+  "i18n": false
+}
