@@ -1,0 +1,22 @@
+{
+  "name": "Itens-chave",
+  "category": "ruinaarcana:artefatos",
+  "icon": "ruinaarcana:bancada_colheita_arcana",
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "ruinaarcana:bateria_arcana",
+      "text": "Bateria Arcana: armazenamento de energia sob céu aberto."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "ruinaarcana:bancada_colheita_arcana",
+      "text": "Bancada de Colheita Arcana: automação agrícola."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "ruinaarcana:codex_artefatos",
+      "text": "Como criar este codex avançado."
+    }
+  ]
+}

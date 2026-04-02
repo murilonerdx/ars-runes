@@ -122,5 +122,7 @@
   "message.ruinaarcana.altar_ritual.pattern_incomplete_fusion": "Fusion pattern incomplete: Essence (N/S), Gravitational (E/W), Transmutation (diagonals).",
   "item.ruinaarcana.codex_rituais": "Ritual Codex",
   "item.ruinaarcana.codex_artefatos": "Artifact Codex",
-  "item.ruinaarcana.codex_progressao": "Progression Codex"
+  "item.ruinaarcana.codex_progressao": "Progression Codex",
+  "message.ruinaarcana.codex_runico.unavailable": "Patchouli not found. Install Patchouli to open advanced codex books.",
+  "message.ruinaarcana.bancada_colheita_arcana.rune_already_installed": "The bench already has an installed rune."
 }

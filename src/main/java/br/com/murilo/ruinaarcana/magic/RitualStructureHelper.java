@@ -22,25 +22,25 @@ public final class RitualStructureHelper {
     }
 
     public static boolean hasForgePattern(Level level, BlockPos altarPos) {
-        return level.getBlockState(altarPos.north()).is(ModBlocks.SIGILO_CELESTE.get())
+        return hasCatalystPattern(level, altarPos) || (level.getBlockState(altarPos.north()).is(ModBlocks.SIGILO_CELESTE.get())
                 && level.getBlockState(altarPos.south()).is(ModBlocks.SIGILO_CELESTE.get())
                 && level.getBlockState(altarPos.east()).is(ModBlocks.SIGILO_TRANSMUTACAO.get())
                 && level.getBlockState(altarPos.west()).is(ModBlocks.SIGILO_TRANSMUTACAO.get())
                 && level.getBlockState(altarPos.north().east()).is(ModBlocks.SIGILO_CRESCIMENTO.get())
                 && level.getBlockState(altarPos.north().west()).is(ModBlocks.SIGILO_CRESCIMENTO.get())
                 && level.getBlockState(altarPos.south().east()).is(ModBlocks.SIGILO_CRESCIMENTO.get())
-                && level.getBlockState(altarPos.south().west()).is(ModBlocks.SIGILO_CRESCIMENTO.get());
+                && level.getBlockState(altarPos.south().west()).is(ModBlocks.SIGILO_CRESCIMENTO.get()));
     }
 
     public static boolean hasFusionPattern(Level level, BlockPos altarPos) {
-        return level.getBlockState(altarPos.north()).is(ModBlocks.SIGILO_ESSENCIA.get())
+        return hasCatalystPattern(level, altarPos) || (level.getBlockState(altarPos.north()).is(ModBlocks.SIGILO_ESSENCIA.get())
                 && level.getBlockState(altarPos.south()).is(ModBlocks.SIGILO_ESSENCIA.get())
                 && level.getBlockState(altarPos.east()).is(ModBlocks.SIGILO_GRAVITACIONAL.get())
                 && level.getBlockState(altarPos.west()).is(ModBlocks.SIGILO_GRAVITACIONAL.get())
                 && level.getBlockState(altarPos.north().east()).is(ModBlocks.SIGILO_TRANSMUTACAO.get())
                 && level.getBlockState(altarPos.north().west()).is(ModBlocks.SIGILO_TRANSMUTACAO.get())
                 && level.getBlockState(altarPos.south().east()).is(ModBlocks.SIGILO_TRANSMUTACAO.get())
-                && level.getBlockState(altarPos.south().west()).is(ModBlocks.SIGILO_TRANSMUTACAO.get());
+                && level.getBlockState(altarPos.south().west()).is(ModBlocks.SIGILO_TRANSMUTACAO.get()));
     }
 
     public static void clearCatalystPattern(ServerLevel level, BlockPos altarPos) {

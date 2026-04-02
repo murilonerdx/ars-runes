@@ -122,5 +122,7 @@
   "message.ruinaarcana.altar_ritual.pattern_incomplete_fusion": "Padrão de fusão incompleto: Essência (N/S), Gravitacional (L/O), Transmutação (diagonais).",
   "item.ruinaarcana.codex_rituais": "Codex de Rituais",
   "item.ruinaarcana.codex_artefatos": "Codex de Artefatos",
-  "item.ruinaarcana.codex_progressao": "Codex de Progressão"
+  "item.ruinaarcana.codex_progressao": "Codex de Progressão",
+  "message.ruinaarcana.codex_runico.unavailable": "Patchouli não encontrado. Instale o mod Patchouli para abrir os codex avançados.",
+  "message.ruinaarcana.bancada_colheita_arcana.rune_already_installed": "A bancada já possui uma runa instalada."
 }
