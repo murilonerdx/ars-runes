@@ -3,6 +3,7 @@ package br.com.murilo.ruinaarcana.block.entity;
 import br.com.murilo.ruinaarcana.block.ArcaneBatteryBlock;
 import br.com.murilo.ruinaarcana.config.RuinaArcanaConfig;
 import br.com.murilo.ruinaarcana.magic.ArcaneChargeHelper;
+import br.com.murilo.ruinaarcana.magic.ArsSourceJarCompatHelper;
 import br.com.murilo.ruinaarcana.menu.ArcaneBatteryMenu;
 import br.com.murilo.ruinaarcana.registry.ModBlockEntities;
 import br.com.murilo.ruinaarcana.registry.ModBlocks;
@@ -10,6 +11,7 @@ import br.com.murilo.ruinaarcana.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -18,6 +20,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.fml.ModList;
 
 public class ArcaneBatteryBlockEntity extends BlockEntity implements MenuProvider {
 
@@ -104,14 +107,26 @@ public class ArcaneBatteryBlockEntity extends BlockEntity implements MenuProvide
             return;
         }
 
-        if (charge >= max) {
-            syncChargeStage();
-            return;
+        if (charge < max) {
+            // Recarrega infinitamente após o vínculo do catalisador.
+            int linkedGain = Math.max(1, RuinaArcanaConfig.VALUES.catalystSkyChargePerPulse.get());
+            addCharge(linkedGain);
         }
 
-        // Recarrega infinitamente após o vínculo do catalisador.
-        int linkedGain = Math.max(1, RuinaArcanaConfig.VALUES.catalystSkyChargePerPulse.get());
-        addCharge(linkedGain);
+        int sourceJarPull = Math.max(0, RuinaArcanaConfig.VALUES.batterySourceJarTransferPerPulse.get());
+        if (ModList.get().isLoaded("ars_nouveau") && sourceJarPull > 0 && charge > 0) {
+            int moved = ArsSourceJarCompatHelper.pushToNearbySourceJars(
+                    (ServerLevel) level,
+                    worldPosition,
+                    RuinaArcanaConfig.VALUES.batterySourceJarRadius.get(),
+                    Math.min(sourceJarPull, charge)
+            );
+            if (moved > 0) {
+                removeCharge(moved);
+            }
+        }
+
+        syncChargeStage();
     }
 
     public int extractCharge(int requested) {

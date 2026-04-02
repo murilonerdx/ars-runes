@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " N ",
+    "NCN",
+    " N "
+  ],
+  "key": {
+    "N": { "item": "ruinaarcana:nucleo_catalisador" },
+    "C": { "item": "minecraft:golden_carrot" }
+  },
+  "result": { "item": "ruinaarcana:runa_da_vitalidade" }
+}
