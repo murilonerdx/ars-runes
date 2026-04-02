@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PRP",
+    "RBR",
+    "PRP"
+  ],
+  "key": {
+    "P": { "item": "minecraft:paper" },
+    "R": { "item": "ruinaarcana:runa_da_ruina" },
+    "B": { "item": "minecraft:book" }
+  },
+  "result": { "item": "ruinaarcana:codex_runico" }
+}

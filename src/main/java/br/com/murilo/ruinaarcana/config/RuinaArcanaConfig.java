@@ -38,6 +38,8 @@ public final class RuinaArcanaConfig {
         public final ForgeConfigSpec.IntValue batteryTransferPerPulse;
         public final ForgeConfigSpec.IntValue batteryTransferRadius;
         public final ForgeConfigSpec.IntValue batteryPulseIntervalTicks;
+        public final ForgeConfigSpec.IntValue batterySourceJarTransferPerPulse;
+        public final ForgeConfigSpec.IntValue batterySourceJarRadius;
         public final ForgeConfigSpec.IntValue runePulseEnergyCost;
         public final ForgeConfigSpec.IntValue harvestBenchMaxCharge;
         public final ForgeConfigSpec.IntValue harvestBenchPullPerPulse;
@@ -90,6 +92,8 @@ public final class RuinaArcanaConfig {
             batteryTransferPerPulse = builder.comment("Carga enviada por pulso.").defineInRange("transferPerPulse", 24, 0, 500);
             batteryTransferRadius = builder.comment("Raio de distribuição da bateria.").defineInRange("transferRadius", 6, 1, 24);
             batteryPulseIntervalTicks = builder.comment("Intervalo de pulso da bateria.").defineInRange("pulseIntervalTicks", 20, 1, 200);
+            batterySourceJarTransferPerPulse = builder.comment("Carga máxima convertida para Source Jar por pulso.").defineInRange("sourceJarTransferPerPulse", 30, 0, 2000);
+            batterySourceJarRadius = builder.comment("Raio para enviar carga para Source Jar.").defineInRange("sourceJarRadius", 6, 1, 24);
             builder.pop();
 
             builder.push("bancada_colheita_arcana");

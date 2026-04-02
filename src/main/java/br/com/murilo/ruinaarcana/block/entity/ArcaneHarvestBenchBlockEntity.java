@@ -40,7 +40,9 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuProvider {
 
@@ -65,7 +67,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
     private final ItemStackHandler runeInventory = new ItemStackHandler(1) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
-            return stack.is(ModItems.RUNA_DA_RUINA.get());
+            return ModItems.isFarmRune(stack);
         }
 
         @Override
@@ -161,7 +163,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
     }
 
     public boolean installRune(ItemStack stack) {
-        if (hasInstalledRune() || stack.isEmpty() || !stack.is(ModItems.RUNA_DA_RUINA.get())) {
+        if (hasInstalledRune() || stack.isEmpty() || !ModItems.isFarmRune(stack)) {
             return false;
         }
 
@@ -187,35 +189,39 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
         return runeInventory.getStackInSlot(0);
     }
 
-    private boolean hasGrowthRuneInstalled() {
+    private boolean consumeInstalledRuneCharge(int amount) {
         ItemStack rune = getInstalledRune();
-        return !rune.isEmpty() && rune.is(ModItems.RUNA_DA_RUINA.get());
-    }
-
-    private boolean hasUsableGrowthRune() {
-        ItemStack rune = getInstalledRune();
-        if (rune.isEmpty() || !rune.is(ModItems.RUNA_DA_RUINA.get())) {
+        if (rune.isEmpty() || !ModItems.isFarmRune(rune)) {
             return false;
         }
 
-        int runePulseCost = Math.max(1, RuinaArcanaConfig.VALUES.runePulseEnergyCost.get());
-        return ArcaneChargeHelper.getCharge(rune) >= runePulseCost;
-    }
-
-    private boolean consumeInstalledRuneCharge() {
-        ItemStack rune = getInstalledRune();
-        if (rune.isEmpty() || !rune.is(ModItems.RUNA_DA_RUINA.get())) {
+        if (ArcaneChargeHelper.getCharge(rune) < amount) {
             return false;
         }
 
-        int runePulseCost = Math.max(1, RuinaArcanaConfig.VALUES.runePulseEnergyCost.get());
-        if (ArcaneChargeHelper.getCharge(rune) < runePulseCost) {
-            return false;
-        }
-
-        ArcaneChargeHelper.removeCharge(rune, runePulseCost);
+        ArcaneChargeHelper.removeCharge(rune, amount);
         setChanged();
         return true;
+    }
+
+    private BenchRuneType getInstalledRuneType() {
+        ItemStack rune = getInstalledRune();
+        if (rune.is(ModItems.RUNA_DA_COLHEITA.get())) {
+            return BenchRuneType.COLHEITA;
+        }
+        if (rune.is(ModItems.RUNA_DA_VITALIDADE.get())) {
+            return BenchRuneType.VITALIDADE;
+        }
+        if (rune.is(ModItems.RUNA_DO_FLUXO.get())) {
+            return BenchRuneType.FLUXO;
+        }
+        if (rune.is(ModItems.RUNA_DO_ARMAZENAMENTO.get())) {
+            return BenchRuneType.ARMAZENAMENTO;
+        }
+        if (rune.is(ModItems.RUNA_DA_RUINA.get())) {
+            return BenchRuneType.RUINA;
+        }
+        return BenchRuneType.NONE;
     }
 
     private void pullLinkedCatalystEnergy() {
@@ -263,20 +269,17 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
     }
 
     private void triggerInstalledRunePulse(ServerLevel level) {
-        if (!hasGrowthRuneInstalled()) {
-            return;
-        }
-
-        if (!hasUsableGrowthRune()) {
+        if (getInstalledRuneType() != BenchRuneType.RUINA) {
             return;
         }
 
         int machineCost = Math.max(1, RuinaArcanaConfig.VALUES.harvestBenchCropEnergyCost.get() / 2);
+        int runePulseCost = Math.max(1, RuinaArcanaConfig.VALUES.runePulseEnergyCost.get());
         if (charge < machineCost) {
             return;
         }
 
-        if (!consumeInstalledRuneCharge()) {
+        if (!consumeInstalledRuneCharge(runePulseCost)) {
             return;
         }
 
@@ -286,6 +289,9 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
 
     private void pullEnergy(ServerLevel level) {
         int maxPull = RuinaArcanaConfig.VALUES.harvestBenchPullPerPulse.get();
+        if (getInstalledRuneType() == BenchRuneType.FLUXO && consumeInstalledRuneCharge(4)) {
+            maxPull += Math.max(1, maxPull / 2);
+        }
         int room = Math.max(0, getMaxCharge() - charge);
 
         if (room <= 0) {
@@ -337,7 +343,9 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
 
     private void harvestCrops(ServerLevel level) {
         int radius = getWorkRange();
-        int cost = RuinaArcanaConfig.VALUES.harvestBenchCropEnergyCost.get();
+        int baseCost = RuinaArcanaConfig.VALUES.harvestBenchCropEnergyCost.get();
+        boolean harvestRuneBoost = getInstalledRuneType() == BenchRuneType.COLHEITA && consumeInstalledRuneCharge(1);
+        int cost = harvestRuneBoost ? Math.max(1, (int) Math.floor(baseCost * 0.6D)) : baseCost;
 
         for (BlockPos pos : BlockPos.betweenClosed(
                 worldPosition.offset(-radius, -1, -radius),
@@ -391,7 +399,9 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
     }
 
     private void harvestAnimals(ServerLevel level) {
-        int cost = RuinaArcanaConfig.VALUES.harvestBenchAnimalEnergyCost.get();
+        int baseCost = RuinaArcanaConfig.VALUES.harvestBenchAnimalEnergyCost.get();
+        boolean vitalityRuneBoost = getInstalledRuneType() == BenchRuneType.VITALIDADE && consumeInstalledRuneCharge(2);
+        int cost = vitalityRuneBoost ? Math.max(1, (int) Math.floor(baseCost * 0.65D)) : baseCost;
         if (charge < cost) {
             return;
         }
@@ -399,8 +409,22 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
         int radius = getWorkRange();
         int keepCount = RuinaArcanaConfig.VALUES.harvestBenchAnimalKeepCount.get();
         AABB area = new AABB(worldPosition).inflate(radius + 0.5D);
+        List<Animal> adults = level.getEntitiesOfClass(
+                Animal.class,
+                area,
+                entity -> entity.isAlive() && !entity.isBaby()
+        );
 
-        for (Animal animal : level.getEntitiesOfClass(Animal.class, area, entity -> entity.isAlive() && !entity.isBaby())) {
+        if (adults.isEmpty()) {
+            return;
+        }
+
+        Map<EntityType<?>, Integer> adultsByType = new HashMap<>();
+        for (Animal adult : adults) {
+            adultsByType.merge(adult.getType(), 1, Integer::sum);
+        }
+
+        for (Animal animal : adults) {
             if (charge < cost) {
                 return;
             }
@@ -415,11 +439,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
                 continue;
             }
 
-            int sameTypeAdults = level.getEntitiesOfClass(
-                    Animal.class,
-                    area,
-                    entity -> entity.isAlive() && !entity.isBaby() && entity.getType() == animal.getType()
-            ).size();
+            int sameTypeAdults = adultsByType.getOrDefault(animal.getType(), 0);
 
             if (sameTypeAdults <= keepCount) {
                 continue;
@@ -473,6 +493,10 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
 
         int remainingItemBudget = RuinaArcanaConfig.VALUES.harvestBenchTeleportItemsPerPulse.get();
         int energyPerItem = Math.max(1, RuinaArcanaConfig.VALUES.harvestBenchTeleportEnergyPerItem.get());
+        if (getInstalledRuneType() == BenchRuneType.ARMAZENAMENTO && consumeInstalledRuneCharge(3)) {
+            remainingItemBudget += 8;
+            energyPerItem = Math.max(1, energyPerItem - 1);
+        }
 
         for (int slot = 0; slot < inventory.getSlots(); slot++) {
             if (remainingItemBudget <= 0 || charge < energyPerItem) {
@@ -650,5 +674,14 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
         linkedInventoryPos = tag.contains(LINKED_POS_KEY)
                 ? NbtUtils.readBlockPos(tag.getCompound(LINKED_POS_KEY))
                 : null;
+    }
+
+    private enum BenchRuneType {
+        NONE,
+        RUINA,
+        COLHEITA,
+        VITALIDADE,
+        FLUXO,
+        ARMAZENAMENTO
     }
 }

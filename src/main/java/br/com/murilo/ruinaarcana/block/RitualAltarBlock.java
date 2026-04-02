@@ -10,12 +10,28 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.List;
+
 public class RitualAltarBlock extends Block {
+
+    private static final List<RuneRitualRecipe> RUNE_RITUALS = List.of(
+            new RuneRitualRecipe(Items.WHEAT, ModItems.RUNA_DA_COLHEITA.get(), 220, "message.ruinaarcana.altar_ritual.created_rune_harvest"),
+            new RuneRitualRecipe(Items.GOLDEN_CARROT, ModItems.RUNA_DA_VITALIDADE.get(), 260, "message.ruinaarcana.altar_ritual.created_rune_vitality"),
+            new RuneRitualRecipe(Items.REDSTONE, ModItems.RUNA_DO_FLUXO.get(), 240, "message.ruinaarcana.altar_ritual.created_rune_flow"),
+            new RuneRitualRecipe(Items.CHEST, ModItems.RUNA_DO_ARMAZENAMENTO.get(), 300, "message.ruinaarcana.altar_ritual.created_rune_storage")
+    );
+    private static final List<RuneFusionRecipe> RUNE_FUSIONS = List.of(
+            new RuneFusionRecipe(ModItems.RUNA_DA_COLHEITA.get(), ModItems.RUNA_DA_VITALIDADE.get(), new ItemStack(Items.SLIME_BALL, 4), "message.ruinaarcana.altar_ritual.created_item_slime"),
+            new RuneFusionRecipe(ModItems.RUNA_DO_FLUXO.get(), ModItems.RUNA_DO_ARMAZENAMENTO.get(), new ItemStack(Items.ENDER_PEARL, 2), "message.ruinaarcana.altar_ritual.created_item_ender"),
+            new RuneFusionRecipe(ModItems.RUNA_DA_RUINA.get(), ModItems.RUNA_DO_FLUXO.get(), new ItemStack(Items.NETHER_STAR, 1), "message.ruinaarcana.altar_ritual.created_item_nether_star")
+    );
 
     public RitualAltarBlock(Properties properties) {
         super(properties);
@@ -54,7 +70,100 @@ public class RitualAltarBlock extends Block {
             return InteractionResult.CONSUME;
         }
 
+        if (ModItems.isFarmRune(heldItem)) {
+            if (!level.canSeeSky(pos.above())) {
+                player.displayClientMessage(Component.translatable("message.ruinaarcana.altar_ritual.sky_required"), true);
+                return InteractionResult.CONSUME;
+            }
+
+            if (!RitualStructureHelper.hasCatalystPattern(level, pos)) {
+                player.displayClientMessage(Component.translatable("message.ruinaarcana.altar_ritual.pattern_incomplete"), true);
+                return InteractionResult.CONSUME;
+            }
+
+            ItemStack offhand = player.getOffhandItem();
+            if (ModItems.isFarmRune(offhand)) {
+                RuneFusionRecipe fusionRecipe = findFusionRecipe(heldItem, offhand);
+                if (fusionRecipe == null) {
+                    player.displayClientMessage(Component.translatable("message.ruinaarcana.altar_ritual.invalid_rune_combo"), true);
+                    return InteractionResult.CONSUME;
+                }
+
+                heldItem.shrink(1);
+                offhand.shrink(1);
+                RitualStructureHelper.clearCatalystPattern((ServerLevel) level, pos);
+
+                ItemEntity entity = new ItemEntity(
+                        level,
+                        pos.getX() + 0.5D,
+                        pos.getY() + 1.15D,
+                        pos.getZ() + 0.5D,
+                        fusionRecipe.output().copy()
+                );
+                entity.setDefaultPickUpDelay();
+                level.addFreshEntity(entity);
+
+                player.displayClientMessage(Component.translatable(fusionRecipe.successMessageKey()), true);
+                return InteractionResult.CONSUME;
+            }
+
+            if (!heldItem.is(ModItems.RUNA_DA_RUINA.get())) {
+                player.displayClientMessage(Component.translatable("message.ruinaarcana.altar_ritual.invalid_rune_combo"), true);
+                return InteractionResult.CONSUME;
+            }
+
+            RuneRitualRecipe ritualRecipe = findRuneRecipe(offhand);
+            if (ritualRecipe == null) {
+                player.displayClientMessage(Component.translatable("message.ruinaarcana.altar_ritual.rune_missing_reagent"), true);
+                return InteractionResult.CONSUME;
+            }
+
+            heldItem.shrink(1);
+            offhand.shrink(1);
+            RitualStructureHelper.clearCatalystPattern((ServerLevel) level, pos);
+
+            ItemStack upgradedRune = new ItemStack(ritualRecipe.outputRune());
+            ArcaneChargeHelper.addCharge(upgradedRune, ritualRecipe.initialCharge());
+
+            ItemEntity entity = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 1.15D, pos.getZ() + 0.5D, upgradedRune);
+            entity.setDefaultPickUpDelay();
+            level.addFreshEntity(entity);
+
+            player.displayClientMessage(Component.translatable(ritualRecipe.successMessageKey()), true);
+            return InteractionResult.CONSUME;
+        }
+
         player.displayClientMessage(Component.translatable("message.ruinaarcana.altar_ritual.hint"), true);
         return InteractionResult.CONSUME;
+    }
+
+    private RuneRitualRecipe findRuneRecipe(ItemStack reagent) {
+        if (reagent.isEmpty()) {
+            return null;
+        }
+
+        for (RuneRitualRecipe recipe : RUNE_RITUALS) {
+            if (reagent.is(recipe.reagent())) {
+                return recipe;
+            }
+        }
+        return null;
+    }
+
+    private RuneFusionRecipe findFusionRecipe(ItemStack mainHandRune, ItemStack offhandRune) {
+        for (RuneFusionRecipe recipe : RUNE_FUSIONS) {
+            boolean forward = mainHandRune.is(recipe.runeA()) && offhandRune.is(recipe.runeB());
+            boolean reverse = mainHandRune.is(recipe.runeB()) && offhandRune.is(recipe.runeA());
+            if (forward || reverse) {
+                return recipe;
+            }
+        }
+        return null;
+    }
+
+    private record RuneRitualRecipe(Item reagent, Item outputRune, int initialCharge, String successMessageKey) {
+    }
+
+    private record RuneFusionRecipe(Item runeA, Item runeB, ItemStack output, String successMessageKey) {
     }
 }
