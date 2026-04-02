@@ -154,8 +154,8 @@ public class RitualAltarBlock extends Block {
 
     private RuneFusionRecipe findFusionRecipe(ItemStack mainHandRune, ItemStack offhandRune) {
         for (RuneFusionRecipe recipe : RUNE_FUSIONS) {
-            boolean forward = mainHandRune.is(recipe.runeA()) && offhandRune.is(recipe.runeB());
-            boolean reverse = mainHandRune.is(recipe.runeB()) && offhandRune.is(recipe.runeA());
+            boolean forward = mainHandRune.is(recipe.runeA().get()) && offhandRune.is(recipe.runeB().get());
+            boolean reverse = mainHandRune.is(recipe.runeB().get()) && offhandRune.is(recipe.runeA().get());
             if (forward || reverse) {
                 return recipe;
             }
@@ -166,6 +166,6 @@ public class RitualAltarBlock extends Block {
     private record RuneRitualRecipe(Item reagent, RegistryObject<Item> outputRune, int initialCharge, String successMessageKey) {
     }
 
-    private record RuneFusionRecipe(ItemLike runeA, ItemLike runeB, ItemStack output, String successMessageKey) {
+    private record RuneFusionRecipe(RegistryObject<Item> runeA, RegistryObject<Item> runeB, ItemStack output, String successMessageKey) {
     }
 }
