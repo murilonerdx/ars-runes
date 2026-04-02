@@ -56,6 +56,8 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
 
     private static final int MIN_WORK_RANGE = 1;
     private static final int MAX_WORK_RANGE = 8;
+    private static final String CUSTOM_EFFECT_KEY = "CustomRuneEffect";
+    private static final String CUSTOM_POTENCY_KEY = "CustomRunePotency";
 
     private final ItemStackHandler inventory = new ItemStackHandler(18) {
         @Override

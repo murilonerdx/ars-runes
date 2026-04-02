@@ -23,12 +23,14 @@ public class ArcaneHarvestBenchScreen extends AbstractContainerScreen<ArcaneHarv
         super(menu, inventory, title);
         this.imageWidth = 230;
         this.imageHeight = 184;
+        this.inventoryLabelX = 36;
         this.inventoryLabelY = this.imageHeight - 94;
     }
 
     @Override
     protected void init() {
         super.init();
+        this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
 
         this.showRangeOverlay = this.minecraft != null
                 && this.minecraft.level != null
@@ -111,7 +113,9 @@ public class ArcaneHarvestBenchScreen extends AbstractContainerScreen<ArcaneHarv
     }
 
     private Component getToggleRangeText() {
-        return Component.literal(this.showRangeOverlay ? "Range ON" : "Range OFF");
+        return Component.translatable(this.showRangeOverlay
+                ? "screen.ruinaarcana.arcane_harvest_bench.range_on"
+                : "screen.ruinaarcana.arcane_harvest_bench.range_off");
     }
 
     private void sendMenuButton(int buttonId) {
@@ -141,19 +145,21 @@ public class ArcaneHarvestBenchScreen extends AbstractContainerScreen<ArcaneHarv
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        guiGraphics.drawString(this.font, this.title, 8, 6, 0x4A3555, false);
-        guiGraphics.drawString(this.font, Component.literal("Runa"), 18, 20, 0x5B4A63, false);
-        guiGraphics.drawString(this.font, Component.literal("Storage"), 62, 6, 0x5B4A63, false);
+        guiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 0x4A3555, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.ruinaarcana.arcane_harvest_bench.rune_slot"), 18, 20, 0x5B4A63, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.ruinaarcana.arcane_harvest_bench.storage"), 62, 6, 0x5B4A63, false);
 
         guiGraphics.drawString(
                 this.font,
-                Component.literal("Carga: " + menu.getCharge() + "/" + menu.getMaxCharge()),
+                Component.translatable("screen.ruinaarcana.arcane_harvest_bench.charge", menu.getCharge(), menu.getMaxCharge()),
                 105, 42, 0x5B4A63, false
         );
 
         guiGraphics.drawString(
                 this.font,
-                Component.literal(menu.isLinked() ? "Ligada" : "Sem link"),
+                Component.translatable(menu.isLinked()
+                        ? "screen.ruinaarcana.arcane_harvest_bench.linked"
+                        : "screen.ruinaarcana.arcane_harvest_bench.unlinked"),
                 105, 70,
                 menu.isLinked() ? 0x2D7A52 : 0x8A3B4A,
                 false
@@ -161,19 +167,21 @@ public class ArcaneHarvestBenchScreen extends AbstractContainerScreen<ArcaneHarv
 
         guiGraphics.drawString(
                 this.font,
-                Component.literal("Stacks: " + menu.getStoredStacks()),
+                Component.translatable("screen.ruinaarcana.arcane_harvest_bench.stored", menu.getStoredStacks()),
                 105, 84, 0x5B4A63, false
         );
 
         guiGraphics.drawString(
                 this.font,
-                Component.literal("Range: " + menu.getWorkRange()),
+                Component.translatable("screen.ruinaarcana.arcane_harvest_bench.range_value", menu.getWorkRange()),
                 105, 92, 0x5B4A63, false
         );
 
         guiGraphics.drawString(
                 this.font,
-                Component.literal(showRangeOverlay ? "Visualização 3D ativa" : "Visualização 3D desligada"),
+                Component.translatable(showRangeOverlay
+                        ? "screen.ruinaarcana.arcane_harvest_bench.range_preview_on"
+                        : "screen.ruinaarcana.arcane_harvest_bench.range_preview_off"),
                 105, 120,
                 showRangeOverlay ? 0x2D7A52 : 0x8A3B4A,
                 false

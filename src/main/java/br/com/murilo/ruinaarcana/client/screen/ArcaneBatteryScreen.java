@@ -18,10 +18,16 @@ public class ArcaneBatteryScreen extends AbstractContainerScreen<ArcaneBatteryMe
         super(menu, inventory, title);
         this.imageWidth = 176;
         this.imageHeight = 166;
-        this.titleLabelX = 8;
+        this.titleLabelX = 0;
         this.titleLabelY = 6;
         this.inventoryLabelX = 8;
         this.inventoryLabelY = this.imageHeight - 94;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
     }
 
     @Override
@@ -41,13 +47,17 @@ public class ArcaneBatteryScreen extends AbstractContainerScreen<ArcaneBatteryMe
     }
 
     @Override
+    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        super.renderLabels(guiGraphics, mouseX, mouseY);
+        Component energyText = Component.translatable("screen.ruinaarcana.arcane_battery.charge", menu.getCharge(), menu.getMaxCharge());
+        int textX = this.imageWidth - 8 - this.font.width(energyText);
+        guiGraphics.drawString(this.font, energyText, textX, 20, 0x404040, false);
+    }
+
+    @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-
-        String energyText = menu.getCharge() + " / " + menu.getMaxCharge();
-        guiGraphics.drawString(this.font, energyText, leftPos + 96, topPos + 20, 0x404040, false);
-
         this.renderTooltip(guiGraphics, mouseX, mouseY);
     }
 }
