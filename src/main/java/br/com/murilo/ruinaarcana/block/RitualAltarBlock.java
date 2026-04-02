@@ -16,21 +16,22 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.List;
 
 public class RitualAltarBlock extends Block {
 
     private static final List<RuneRitualRecipe> RUNE_RITUALS = List.of(
-            new RuneRitualRecipe(Items.WHEAT, ModItems.RUNA_DA_COLHEITA.get(), 220, "message.ruinaarcana.altar_ritual.created_rune_harvest"),
-            new RuneRitualRecipe(Items.GOLDEN_CARROT, ModItems.RUNA_DA_VITALIDADE.get(), 260, "message.ruinaarcana.altar_ritual.created_rune_vitality"),
-            new RuneRitualRecipe(Items.REDSTONE, ModItems.RUNA_DO_FLUXO.get(), 240, "message.ruinaarcana.altar_ritual.created_rune_flow"),
-            new RuneRitualRecipe(Items.CHEST, ModItems.RUNA_DO_ARMAZENAMENTO.get(), 300, "message.ruinaarcana.altar_ritual.created_rune_storage")
+            new RuneRitualRecipe(Items.WHEAT, ModItems.RUNA_DA_COLHEITA, 220, "message.ruinaarcana.altar_ritual.created_rune_harvest"),
+            new RuneRitualRecipe(Items.GOLDEN_CARROT, ModItems.RUNA_DA_VITALIDADE, 260, "message.ruinaarcana.altar_ritual.created_rune_vitality"),
+            new RuneRitualRecipe(Items.REDSTONE, ModItems.RUNA_DO_FLUXO, 240, "message.ruinaarcana.altar_ritual.created_rune_flow"),
+            new RuneRitualRecipe(Items.CHEST, ModItems.RUNA_DO_ARMAZENAMENTO, 300, "message.ruinaarcana.altar_ritual.created_rune_storage")
     );
     private static final List<RuneFusionRecipe> RUNE_FUSIONS = List.of(
-            new RuneFusionRecipe(ModItems.RUNA_DA_COLHEITA.get(), ModItems.RUNA_DA_VITALIDADE.get(), new ItemStack(Items.SLIME_BALL, 4), "message.ruinaarcana.altar_ritual.created_item_slime"),
-            new RuneFusionRecipe(ModItems.RUNA_DO_FLUXO.get(), ModItems.RUNA_DO_ARMAZENAMENTO.get(), new ItemStack(Items.ENDER_PEARL, 2), "message.ruinaarcana.altar_ritual.created_item_ender"),
-            new RuneFusionRecipe(ModItems.RUNA_DA_RUINA.get(), ModItems.RUNA_DO_FLUXO.get(), new ItemStack(Items.NETHER_STAR, 1), "message.ruinaarcana.altar_ritual.created_item_nether_star")
+            new RuneFusionRecipe(ModItems.RUNA_DA_COLHEITA, ModItems.RUNA_DA_VITALIDADE, new ItemStack(Items.SLIME_BALL, 4), "message.ruinaarcana.altar_ritual.created_item_slime"),
+            new RuneFusionRecipe(ModItems.RUNA_DO_FLUXO, ModItems.RUNA_DO_ARMAZENAMENTO, new ItemStack(Items.ENDER_PEARL, 2), "message.ruinaarcana.altar_ritual.created_item_ender"),
+            new RuneFusionRecipe(ModItems.RUNA_DA_RUINA, ModItems.RUNA_DO_FLUXO, new ItemStack(Items.NETHER_STAR, 1), "message.ruinaarcana.altar_ritual.created_item_nether_star")
     );
 
     public RitualAltarBlock(Properties properties) {
@@ -122,7 +123,7 @@ public class RitualAltarBlock extends Block {
             offhand.shrink(1);
             RitualStructureHelper.clearCatalystPattern((ServerLevel) level, pos);
 
-            ItemStack upgradedRune = new ItemStack(ritualRecipe.outputRune());
+            ItemStack upgradedRune = new ItemStack(ritualRecipe.outputRune().get());
             ArcaneChargeHelper.addCharge(upgradedRune, ritualRecipe.initialCharge());
 
             ItemEntity entity = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 1.15D, pos.getZ() + 0.5D, upgradedRune);
@@ -152,8 +153,8 @@ public class RitualAltarBlock extends Block {
 
     private RuneFusionRecipe findFusionRecipe(ItemStack mainHandRune, ItemStack offhandRune) {
         for (RuneFusionRecipe recipe : RUNE_FUSIONS) {
-            boolean forward = mainHandRune.is(recipe.runeA()) && offhandRune.is(recipe.runeB());
-            boolean reverse = mainHandRune.is(recipe.runeB()) && offhandRune.is(recipe.runeA());
+            boolean forward = mainHandRune.is(recipe.runeA().get()) && offhandRune.is(recipe.runeB().get());
+            boolean reverse = mainHandRune.is(recipe.runeB().get()) && offhandRune.is(recipe.runeA().get());
             if (forward || reverse) {
                 return recipe;
             }
@@ -161,9 +162,9 @@ public class RitualAltarBlock extends Block {
         return null;
     }
 
-    private record RuneRitualRecipe(Item reagent, Item outputRune, int initialCharge, String successMessageKey) {
+    private record RuneRitualRecipe(Item reagent, RegistryObject<Item> outputRune, int initialCharge, String successMessageKey) {
     }
 
-    private record RuneFusionRecipe(Item runeA, Item runeB, ItemStack output, String successMessageKey) {
+    private record RuneFusionRecipe(RegistryObject<Item> runeA, RegistryObject<Item> runeB, ItemStack output, String successMessageKey) {
     }
 }
