@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "ruinaarcana:nucleo_catalisador",
+    {
+      "id": "ars_nouveau:source_gem",
+      "required": false
+    },
+    {
+      "id": "occultism:spirit_attuned_gem",
+      "required": false
+    }
+  ]
+}

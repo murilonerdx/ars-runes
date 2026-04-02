@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " NC",
+    " LN",
+    "C  "
+  ],
+  "key": {
+    "N": {
+      "tag": "ruinaarcana:grimorio_catalysts"
+    },
+    "C": {
+      "item": "ruinaarcana:catalisador_magico"
+    },
+    "L": {
+      "item": "ruinaarcana:vinculo_astral"
+    }
+  },
+  "result": {
+    "item": "ruinaarcana:grimorio_arcano"
+  }
+}

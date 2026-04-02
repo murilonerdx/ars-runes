@@ -22,7 +22,14 @@ public final class ModCreativeModeTabs {
                         output.accept(ModItems.NUCLEO_CATALISADOR.get());
                         output.accept(ModItems.CATALISADOR_MAGICO.get());
                         output.accept(ModItems.RUNA_DA_RUINA.get());
+                        output.accept(ModItems.RUNA_DA_COLHEITA.get());
+                        output.accept(ModItems.RUNA_DA_VITALIDADE.get());
+                        output.accept(ModItems.RUNA_DO_FLUXO.get());
+                        output.accept(ModItems.RUNA_DO_ARMAZENAMENTO.get());
                         output.accept(ModItems.VINCULO_ASTRAL.get());
+                        output.accept(ModItems.GRIMORIO_ARCANO.get());
+                        output.accept(ModItems.CODEX_RUNICO.get());
+                        output.accept(ModItems.JARRO_ARCANO.get());
 
                         output.accept(ModItems.ALTAR_RITUAL.get());
                         output.accept(ModItems.BATERIA_ARCANA.get());
