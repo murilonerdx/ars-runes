@@ -64,19 +64,19 @@ public class ArcaneHarvestBenchBlock extends BaseEntityBlock {
         }
 
         // instala a runa na bancada
-        if (heldItem.is(ModItems.RUNA_DA_RUINA.get())) {
+        if (ModItems.isFarmRune(heldItem)) {
             if (bench.installRune(heldItem)) {
                 if (!player.getAbilities().instabuild) {
                     heldItem.shrink(1);
                 }
 
                 player.displayClientMessage(
-                        Component.literal("Runa da Ruína instalada na bancada."),
+                        Component.translatable("message.ruinaarcana.bancada_colheita_arcana.rune_installed"),
                         true
                 );
             } else {
                 player.displayClientMessage(
-                        Component.literal("A bancada já possui uma runa instalada."),
+                        Component.translatable("message.ruinaarcana.bancada_colheita_arcana.rune_already_installed"),
                         true
                 );
             }
@@ -92,7 +92,7 @@ public class ArcaneHarvestBenchBlock extends BaseEntityBlock {
                 }
 
                 player.displayClientMessage(
-                        Component.literal("Runa removida da bancada."),
+                        Component.translatable("message.ruinaarcana.bancada_colheita_arcana.rune_removed"),
                         true
                 );
                 return InteractionResult.CONSUME;

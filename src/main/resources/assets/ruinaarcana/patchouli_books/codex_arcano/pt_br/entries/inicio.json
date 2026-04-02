@@ -1,0 +1,22 @@
+{
+  "name": "Primeiros passos",
+  "category": "ruinaarcana:visao_geral",
+  "icon": "ruinaarcana:giz_arcano",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Comece com $(item)Giz Arcano$(), $(item)Altar Ritual$() e $(item)Runa da Ruína$()."
+    },
+    {
+      "type": "patchouli:image",
+      "title": "Sigilo Celeste",
+      "images": ["ruinaarcana:textures/block/sigilo_celeste.png"],
+      "text": "Use sigilos como base para todos os rituais."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "ruinaarcana:codex_runico",
+      "text": "Craft inicial do codex base."
+    }
+  ]
+}

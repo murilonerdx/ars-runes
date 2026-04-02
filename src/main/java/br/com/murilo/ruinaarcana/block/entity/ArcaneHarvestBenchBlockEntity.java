@@ -294,6 +294,9 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
         if (getInstalledRuneType() == BenchRuneType.FLUXO && consumeInstalledRuneCharge(4)) {
             maxPull += Math.max(1, maxPull / 2);
         }
+        if (hasNearbySigil(ModBlocks.SIGILO_TRANSMUTACAO.get(), 3)) {
+            maxPull += Math.max(1, maxPull / 3);
+        }
         int room = Math.max(0, getMaxCharge() - charge);
 
         if (room <= 0) {
@@ -348,6 +351,9 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
         int baseCost = RuinaArcanaConfig.VALUES.harvestBenchCropEnergyCost.get();
         boolean harvestRuneBoost = getInstalledRuneType() == BenchRuneType.COLHEITA && consumeInstalledRuneCharge(1);
         int cost = harvestRuneBoost ? Math.max(1, (int) Math.floor(baseCost * 0.6D)) : baseCost;
+        if (hasNearbySigil(ModBlocks.SIGILO_ESSENCIA.get(), 3)) {
+            cost = Math.max(1, (int) Math.floor(cost * 0.8D));
+        }
 
         for (BlockPos pos : BlockPos.betweenClosed(
                 worldPosition.offset(-radius, -1, -radius),
@@ -404,6 +410,9 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
         int baseCost = RuinaArcanaConfig.VALUES.harvestBenchAnimalEnergyCost.get();
         boolean vitalityRuneBoost = getInstalledRuneType() == BenchRuneType.VITALIDADE && consumeInstalledRuneCharge(2);
         int cost = vitalityRuneBoost ? Math.max(1, (int) Math.floor(baseCost * 0.65D)) : baseCost;
+        if (hasNearbySigil(ModBlocks.SIGILO_ESSENCIA.get(), 3)) {
+            cost = Math.max(1, (int) Math.floor(cost * 0.85D));
+        }
         if (charge < cost) {
             return;
         }
@@ -499,6 +508,9 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
             remainingItemBudget += 8;
             energyPerItem = Math.max(1, energyPerItem - 1);
         }
+        if (hasNearbySigil(ModBlocks.SIGILO_TRANSMUTACAO.get(), 3)) {
+            remainingItemBudget += 4;
+        }
 
         for (int slot = 0; slot < inventory.getSlots(); slot++) {
             if (remainingItemBudget <= 0 || charge < energyPerItem) {
@@ -532,6 +544,23 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
                 consumeCharge(moved * energyPerItem);
             }
         }
+    }
+
+
+    private boolean hasNearbySigil(Block sigilBlock, int radius) {
+        if (level == null) {
+            return false;
+        }
+
+        for (BlockPos pos : BlockPos.betweenClosed(
+                worldPosition.offset(-radius, -1, -radius),
+                worldPosition.offset(radius, 1, radius))) {
+            if (level.getBlockState(pos).is(sigilBlock)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void storeOrDrop(ServerLevel level, BlockPos pos, ItemStack stack) {

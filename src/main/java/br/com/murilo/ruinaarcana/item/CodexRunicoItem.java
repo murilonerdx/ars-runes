@@ -1,25 +1,43 @@
 package br.com.murilo.ruinaarcana.item;
 
+import br.com.murilo.ruinaarcana.RuinaArcanaMod;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 
 public class CodexRunicoItem extends Item {
 
-    public CodexRunicoItem(Properties properties) {
+    public enum CodexType {
+        GERAL("codex_arcano"),
+        RITUAIS("codex_rituais"),
+        ARTEFATOS("codex_artefatos"),
+        PROGRESSAO("codex_progressao");
+
+        private final String patchouliBookId;
+
+        CodexType(String patchouliBookId) {
+            this.patchouliBookId = patchouliBookId;
+        }
+    }
+
+    private static final ResourceLocation PATCHOULI_GUIDE_BOOK = ResourceLocation.fromNamespaceAndPath("patchouli", "guide_book");
+
+    private final CodexType codexType;
+
+    public CodexRunicoItem(Properties properties, CodexType codexType) {
         super(properties);
+        this.codexType = codexType;
     }
 
     @Override
@@ -30,7 +48,12 @@ public class CodexRunicoItem extends Item {
             return InteractionResultHolder.sidedSuccess(stack, true);
         }
 
-        ItemStack guide = createGuideBook();
+        ItemStack guide = createGuideBook(codexType);
+        if (guide.isEmpty()) {
+            player.displayClientMessage(Component.translatable("message.ruinaarcana.codex_runico.unavailable"), true);
+            return InteractionResultHolder.fail(stack);
+        }
+
         if (!player.getInventory().add(guide)) {
             player.drop(guide, false);
         }
@@ -39,38 +62,32 @@ public class CodexRunicoItem extends Item {
         return InteractionResultHolder.consume(stack);
     }
 
-    private ItemStack createGuideBook() {
-        ItemStack writtenBook = new ItemStack(Items.WRITTEN_BOOK);
-        CompoundTag tag = writtenBook.getOrCreateTag();
+    public static ItemStack createGuideBook() {
+        return createGuideBook(CodexType.GERAL);
+    }
 
-        tag.putString("title", "Codex Rúnico");
-        tag.putString("author", "Ruina Arcana");
+    public static ItemStack createRitualGuideBook() {
+        return createGuideBook(CodexType.RITUAIS);
+    }
 
-        ListTag pages = new ListTag();
-        pages.add(StringTag.valueOf(Component.Serializer.toJson(Component.literal(
-                "§5Runas de Fazenda\n\n" +
-                        "Runa da Colheita: reduz custo de colheita.\n" +
-                        "Runa da Vitalidade: reduz custo animal.\n" +
-                        "Runa do Fluxo: puxa mais energia.\n" +
-                        "Runa do Armazenamento: teleporte mais eficiente."
-        ))));
-        pages.add(StringTag.valueOf(Component.Serializer.toJson(Component.literal(
-                "§6Rituais de Forja\n\n" +
-                        "Runa da Ruína + Trigo -> Runa da Colheita\n" +
-                        "Runa da Ruína + Cenoura Dourada -> Runa da Vitalidade\n" +
-                        "Runa da Ruína + Redstone -> Runa do Fluxo\n" +
-                        "Runa da Ruína + Baú -> Runa do Armazenamento"
-        ))));
-        pages.add(StringTag.valueOf(Component.Serializer.toJson(Component.literal(
-                "§cFusão de Runas (itens raros)\n\n" +
-                        "Colheita + Vitalidade -> Slime Ball x4\n" +
-                        "Fluxo + Armazenamento -> Ender Pearl x2\n" +
-                        "Ruína + Fluxo -> Nether Star x1\n\n" +
-                        "Todos os rituais exigem céu aberto e padrão completo no Altar Ritual."
-        ))));
+    public static ItemStack createArtifactGuideBook() {
+        return createGuideBook(CodexType.ARTEFATOS);
+    }
 
-        tag.put("pages", pages);
-        return writtenBook;
+    public static ItemStack createProgressionGuideBook() {
+        return createGuideBook(CodexType.PROGRESSAO);
+    }
+
+    public static ItemStack createGuideBook(CodexType codexType) {
+        Item patchouliGuideBook = ForgeRegistries.ITEMS.getValue(PATCHOULI_GUIDE_BOOK);
+        if (patchouliGuideBook == null) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack guide = new ItemStack(patchouliGuideBook);
+        CompoundTag tag = guide.getOrCreateTag();
+        tag.putString("patchouli:book", ResourceLocation.fromNamespaceAndPath(RuinaArcanaMod.MOD_ID, codexType.patchouliBookId).toString());
+        return guide;
     }
 
     @Override
