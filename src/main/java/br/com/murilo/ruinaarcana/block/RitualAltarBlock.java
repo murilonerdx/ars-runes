@@ -54,7 +54,7 @@ public class RitualAltarBlock extends Block {
             }
 
             if (!RitualStructureHelper.hasCatalystPattern(level, pos)) {
-                player.displayClientMessage(Component.translatable("message.ruinaarcana.altar_ritual.pattern_incomplete"), true);
+                player.displayClientMessage(Component.translatable("message.ruinaarcana.altar_ritual.pattern_incomplete_catalyst"), true);
                 return InteractionResult.CONSUME;
             }
 
@@ -78,13 +78,13 @@ public class RitualAltarBlock extends Block {
                 return InteractionResult.CONSUME;
             }
 
-            if (!RitualStructureHelper.hasCatalystPattern(level, pos)) {
-                player.displayClientMessage(Component.translatable("message.ruinaarcana.altar_ritual.pattern_incomplete"), true);
-                return InteractionResult.CONSUME;
-            }
-
             ItemStack offhand = player.getOffhandItem();
             if (ModItems.isFarmRune(offhand)) {
+                if (!RitualStructureHelper.hasFusionPattern(level, pos)) {
+                    player.displayClientMessage(Component.translatable("message.ruinaarcana.altar_ritual.pattern_incomplete_fusion"), true);
+                    return InteractionResult.CONSUME;
+                }
+
                 RuneFusionRecipe fusionRecipe = findFusionRecipe(heldItem, offhand);
                 if (fusionRecipe == null) {
                     player.displayClientMessage(Component.translatable("message.ruinaarcana.altar_ritual.invalid_rune_combo"), true);
@@ -93,7 +93,7 @@ public class RitualAltarBlock extends Block {
 
                 heldItem.shrink(1);
                 offhand.shrink(1);
-                RitualStructureHelper.clearCatalystPattern((ServerLevel) level, pos);
+                RitualStructureHelper.clearFusionPattern((ServerLevel) level, pos);
 
                 ItemEntity entity = new ItemEntity(
                         level,
@@ -114,6 +114,11 @@ public class RitualAltarBlock extends Block {
                 return InteractionResult.CONSUME;
             }
 
+            if (!RitualStructureHelper.hasForgePattern(level, pos)) {
+                player.displayClientMessage(Component.translatable("message.ruinaarcana.altar_ritual.pattern_incomplete_forge"), true);
+                return InteractionResult.CONSUME;
+            }
+
             RuneRitualRecipe ritualRecipe = findRuneRecipe(offhand);
             if (ritualRecipe == null) {
                 player.displayClientMessage(Component.translatable("message.ruinaarcana.altar_ritual.rune_missing_reagent"), true);
@@ -122,7 +127,7 @@ public class RitualAltarBlock extends Block {
 
             heldItem.shrink(1);
             offhand.shrink(1);
-            RitualStructureHelper.clearCatalystPattern((ServerLevel) level, pos);
+            RitualStructureHelper.clearForgePattern((ServerLevel) level, pos);
 
             ItemStack upgradedRune = new ItemStack(ritualRecipe.outputRune().get());
             ArcaneChargeHelper.addCharge(upgradedRune, ritualRecipe.initialCharge());
