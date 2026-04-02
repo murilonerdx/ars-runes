@@ -1,6 +1,7 @@
 package br.com.murilo.ruinaarcana.registry;
 
 import br.com.murilo.ruinaarcana.RuinaArcanaMod;
+import br.com.murilo.ruinaarcana.item.CodexRunicoItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -29,6 +30,13 @@ public final class ModCreativeModeTabs {
                         output.accept(ModItems.VINCULO_ASTRAL.get());
                         output.accept(ModItems.GRIMORIO_ARCANO.get());
                         output.accept(ModItems.CODEX_RUNICO.get());
+                        output.accept(ModItems.CODEX_RITUAIS.get());
+                        output.accept(ModItems.CODEX_ARTEFATOS.get());
+                        output.accept(ModItems.CODEX_PROGRESSAO.get());
+                        output.accept(CodexRunicoItem.createGuideBook());
+                        output.accept(CodexRunicoItem.createRitualGuideBook());
+                        output.accept(CodexRunicoItem.createArtifactGuideBook());
+                        output.accept(CodexRunicoItem.createProgressionGuideBook());
 
                         output.accept(ModItems.ALTAR_RITUAL.get());
                         output.accept(ModItems.BATERIA_ARCANA.get());
@@ -38,6 +46,8 @@ public final class ModCreativeModeTabs {
                         output.accept(ModItems.SIGILO_CELESTE.get());
                         output.accept(ModItems.SIGILO_CRESCIMENTO.get());
                         output.accept(ModItems.SIGILO_GRAVITACIONAL.get());
+                        output.accept(ModItems.SIGILO_TRANSMUTACAO.get());
+                        output.accept(ModItems.SIGILO_ESSENCIA.get());
                     })
                     .build());
 
