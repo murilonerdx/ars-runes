@@ -1,0 +1,10 @@
+{
+  "name": "Codex de Progressão",
+  "landing_text": "Roteiro de progressão do mod do início ao endgame.",
+  "version": 1,
+  "creative_tab": "ruinaarcana:ruina_arcana",
+  "use_resource_pack": true,
+  "show_progress": false,
+  "model": "patchouli:book_blue",
+  "i18n": false
+}

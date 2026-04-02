@@ -1,0 +1,22 @@
+{
+  "name": "Roteiro completo",
+  "category": "ruinaarcana:progressao",
+  "icon": "ruinaarcana:codex_progressao",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "1) Giz Arcano + Altar$(br)2) Condensação$(br)3) Forja de runas$(br)4) Bateria + Bancada$(br)5) Fusão e otimização"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "ruinaarcana:codex_progressao",
+      "text": "Craft do codex de progressão."
+    },
+    {
+      "type": "patchouli:image",
+      "title": "Símbolos de avanço",
+      "images": ["ruinaarcana:textures/block/sigilo_gravitacional.png"],
+      "text": "Use os sigilos para separar alas de ritual na base."
+    }
+  ]
+}

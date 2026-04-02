@@ -24,6 +24,7 @@ import java.util.List;
 public class ArcaneChalkItem extends Item {
 
     private static final String MODE_KEY = "SigilMode";
+    private static final int MODE_COUNT = 5;
 
     public ArcaneChalkItem(Properties properties) {
         super(properties);
@@ -38,7 +39,7 @@ public class ArcaneChalkItem extends Item {
         }
 
         if (!level.isClientSide) {
-            int nextMode = (getMode(stack) + 1) % 3;
+            int nextMode = (getMode(stack) + 1) % MODE_COUNT;
             setMode(stack, nextMode);
             player.displayClientMessage(Component.translatable(getModeTranslationKey(nextMode)), true);
         }
@@ -54,13 +55,10 @@ public class ArcaneChalkItem extends Item {
         BlockPos clickedPos = context.getClickedPos();
         BlockState clickedState = level.getBlockState(clickedPos);
 
-        // SHIFT + clique em um sigilo já colocado = troca o sigilo existente
         if (player != null && player.isShiftKeyDown() && isSigil(clickedState.getBlock())) {
             if (!level.isClientSide) {
                 Block nextSigil = getNextSigilBlock(clickedState.getBlock());
                 level.setBlock(clickedPos, nextSigil.defaultBlockState(), 3);
-
-                // opcional: sincroniza o modo do giz com o sigilo resultante
                 setMode(stack, getModeFromBlock(nextSigil));
 
                 if (player instanceof ServerPlayer serverPlayer) {
@@ -76,7 +74,6 @@ public class ArcaneChalkItem extends Item {
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
 
-        // lógica normal de desenhar um sigilo novo
         if (context.getClickedFace() != Direction.UP) {
             return InteractionResult.FAIL;
         }
@@ -116,7 +113,9 @@ public class ArcaneChalkItem extends Item {
     private static boolean isSigil(Block block) {
         return block == ModBlocks.SIGILO_CELESTE.get()
                 || block == ModBlocks.SIGILO_CRESCIMENTO.get()
-                || block == ModBlocks.SIGILO_GRAVITACIONAL.get();
+                || block == ModBlocks.SIGILO_GRAVITACIONAL.get()
+                || block == ModBlocks.SIGILO_TRANSMUTACAO.get()
+                || block == ModBlocks.SIGILO_ESSENCIA.get();
     }
 
     private static Block getNextSigilBlock(Block current) {
@@ -125,6 +124,12 @@ public class ArcaneChalkItem extends Item {
         }
         if (current == ModBlocks.SIGILO_CRESCIMENTO.get()) {
             return ModBlocks.SIGILO_GRAVITACIONAL.get();
+        }
+        if (current == ModBlocks.SIGILO_GRAVITACIONAL.get()) {
+            return ModBlocks.SIGILO_TRANSMUTACAO.get();
+        }
+        if (current == ModBlocks.SIGILO_TRANSMUTACAO.get()) {
+            return ModBlocks.SIGILO_ESSENCIA.get();
         }
         return ModBlocks.SIGILO_CELESTE.get();
     }
@@ -136,6 +141,12 @@ public class ArcaneChalkItem extends Item {
         if (block == ModBlocks.SIGILO_GRAVITACIONAL.get()) {
             return 2;
         }
+        if (block == ModBlocks.SIGILO_TRANSMUTACAO.get()) {
+            return 3;
+        }
+        if (block == ModBlocks.SIGILO_ESSENCIA.get()) {
+            return 4;
+        }
         return 0;
     }
 
@@ -143,6 +154,8 @@ public class ArcaneChalkItem extends Item {
         return switch (getMode(stack)) {
             case 1 -> ModBlocks.SIGILO_CRESCIMENTO.get();
             case 2 -> ModBlocks.SIGILO_GRAVITACIONAL.get();
+            case 3 -> ModBlocks.SIGILO_TRANSMUTACAO.get();
+            case 4 -> ModBlocks.SIGILO_ESSENCIA.get();
             default -> ModBlocks.SIGILO_CELESTE.get();
         };
     }
@@ -152,17 +165,19 @@ public class ArcaneChalkItem extends Item {
         if (tag == null || !tag.contains(MODE_KEY)) {
             return 0;
         }
-        return Math.max(0, Math.min(2, tag.getInt(MODE_KEY)));
+        return Math.max(0, Math.min(MODE_COUNT - 1, tag.getInt(MODE_KEY)));
     }
 
     private static void setMode(ItemStack stack, int mode) {
-        stack.getOrCreateTag().putInt(MODE_KEY, Math.max(0, Math.min(2, mode)));
+        stack.getOrCreateTag().putInt(MODE_KEY, Math.max(0, Math.min(MODE_COUNT - 1, mode)));
     }
 
     private static String getModeTranslationKey(int mode) {
         return switch (mode) {
             case 1 -> "message.ruinaarcana.giz_arcano.mode_crescimento";
             case 2 -> "message.ruinaarcana.giz_arcano.mode_gravitacional";
+            case 3 -> "message.ruinaarcana.giz_arcano.mode_transmutacao";
+            case 4 -> "message.ruinaarcana.giz_arcano.mode_essencia";
             default -> "message.ruinaarcana.giz_arcano.mode_celeste";
         };
     }

@@ -1,0 +1,25 @@
+{
+  "name": "Padrões de Sigilo",
+  "category": "ruinaarcana:rituais",
+  "icon": "ruinaarcana:sigilo_transmutacao",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(l)Condensação$(): N/S Celeste, L/O Crescimento, diagonais Gravitacional.$(br2)$(l)Forja$(): N/S Celeste, L/O Transmutação, diagonais Crescimento.$(br2)$(l)Fusão$(): N/S Essência, L/O Gravitacional, diagonais Transmutação."
+    },
+    {
+      "type": "patchouli:image",
+      "title": "Sigilos de ritual",
+      "images": [
+        "ruinaarcana:textures/block/sigilo_crescimento.png",
+        "ruinaarcana:textures/block/sigilo_gravitacional.png"
+      ],
+      "text": "Novos sigilos usados nas estruturas avançadas."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "ruinaarcana:runa_da_ruina",
+      "text": "A Runa da Ruína é o catalisador principal para forja e fusão."
+    }
+  ]
+}

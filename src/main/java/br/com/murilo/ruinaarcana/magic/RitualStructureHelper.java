@@ -21,7 +21,41 @@ public final class RitualStructureHelper {
                 && level.getBlockState(altarPos.south().west()).is(ModBlocks.SIGILO_GRAVITACIONAL.get());
     }
 
+    public static boolean hasForgePattern(Level level, BlockPos altarPos) {
+        return hasCatalystPattern(level, altarPos) || (level.getBlockState(altarPos.north()).is(ModBlocks.SIGILO_CELESTE.get())
+                && level.getBlockState(altarPos.south()).is(ModBlocks.SIGILO_CELESTE.get())
+                && level.getBlockState(altarPos.east()).is(ModBlocks.SIGILO_TRANSMUTACAO.get())
+                && level.getBlockState(altarPos.west()).is(ModBlocks.SIGILO_TRANSMUTACAO.get())
+                && level.getBlockState(altarPos.north().east()).is(ModBlocks.SIGILO_CRESCIMENTO.get())
+                && level.getBlockState(altarPos.north().west()).is(ModBlocks.SIGILO_CRESCIMENTO.get())
+                && level.getBlockState(altarPos.south().east()).is(ModBlocks.SIGILO_CRESCIMENTO.get())
+                && level.getBlockState(altarPos.south().west()).is(ModBlocks.SIGILO_CRESCIMENTO.get()));
+    }
+
+    public static boolean hasFusionPattern(Level level, BlockPos altarPos) {
+        return hasCatalystPattern(level, altarPos) || (level.getBlockState(altarPos.north()).is(ModBlocks.SIGILO_ESSENCIA.get())
+                && level.getBlockState(altarPos.south()).is(ModBlocks.SIGILO_ESSENCIA.get())
+                && level.getBlockState(altarPos.east()).is(ModBlocks.SIGILO_GRAVITACIONAL.get())
+                && level.getBlockState(altarPos.west()).is(ModBlocks.SIGILO_GRAVITACIONAL.get())
+                && level.getBlockState(altarPos.north().east()).is(ModBlocks.SIGILO_TRANSMUTACAO.get())
+                && level.getBlockState(altarPos.north().west()).is(ModBlocks.SIGILO_TRANSMUTACAO.get())
+                && level.getBlockState(altarPos.south().east()).is(ModBlocks.SIGILO_TRANSMUTACAO.get())
+                && level.getBlockState(altarPos.south().west()).is(ModBlocks.SIGILO_TRANSMUTACAO.get()));
+    }
+
     public static void clearCatalystPattern(ServerLevel level, BlockPos altarPos) {
+        clearRing(level, altarPos);
+    }
+
+    public static void clearForgePattern(ServerLevel level, BlockPos altarPos) {
+        clearRing(level, altarPos);
+    }
+
+    public static void clearFusionPattern(ServerLevel level, BlockPos altarPos) {
+        clearRing(level, altarPos);
+    }
+
+    private static void clearRing(ServerLevel level, BlockPos altarPos) {
         clearIfSigil(level, altarPos.north());
         clearIfSigil(level, altarPos.south());
         clearIfSigil(level, altarPos.east());
@@ -35,7 +69,9 @@ public final class RitualStructureHelper {
     private static void clearIfSigil(ServerLevel level, BlockPos pos) {
         if (level.getBlockState(pos).is(ModBlocks.SIGILO_CELESTE.get())
                 || level.getBlockState(pos).is(ModBlocks.SIGILO_CRESCIMENTO.get())
-                || level.getBlockState(pos).is(ModBlocks.SIGILO_GRAVITACIONAL.get())) {
+                || level.getBlockState(pos).is(ModBlocks.SIGILO_GRAVITACIONAL.get())
+                || level.getBlockState(pos).is(ModBlocks.SIGILO_TRANSMUTACAO.get())
+                || level.getBlockState(pos).is(ModBlocks.SIGILO_ESSENCIA.get())) {
             level.destroyBlock(pos, false);
         }
     }

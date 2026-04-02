@@ -75,6 +75,29 @@ public final class ModBlocks {
                     new Vector3f(0.75F, 0.45F, 1.0F)
             ));
 
+
+    public static final RegistryObject<Block> SIGILO_TRANSMUTACAO = BLOCKS.register("sigilo_transmutacao",
+            () -> new SigilBlock(
+                    BlockBehaviour.Properties.of()
+                            .instabreak()
+                            .noCollission()
+                            .noOcclusion()
+                            .lightLevel(state -> 12)
+                            .sound(SoundType.WOOL),
+                    new Vector3f(1.0F, 0.55F, 0.25F)
+            ));
+
+    public static final RegistryObject<Block> SIGILO_ESSENCIA = BLOCKS.register("sigilo_essencia",
+            () -> new SigilBlock(
+                    BlockBehaviour.Properties.of()
+                            .instabreak()
+                            .noCollission()
+                            .noOcclusion()
+                            .lightLevel(state -> 11)
+                            .sound(SoundType.WOOL),
+                    new Vector3f(0.2F, 1.0F, 0.8F)
+            ));
+
     private ModBlocks() {
     }
 }
