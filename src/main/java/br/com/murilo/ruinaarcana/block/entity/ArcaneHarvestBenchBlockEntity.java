@@ -208,18 +208,6 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
 
     private BenchRuneType getInstalledRuneType() {
         ItemStack rune = getInstalledRune();
-        if (rune.hasTag() && rune.getTag() != null && rune.getTag().contains(CUSTOM_EFFECT_KEY)) {
-            String customEffect = rune.getTag().getString(CUSTOM_EFFECT_KEY);
-            return switch (customEffect) {
-                case "harvest" -> BenchRuneType.COLHEITA;
-                case "vitality" -> BenchRuneType.VITALIDADE;
-                case "flow" -> BenchRuneType.FLUXO;
-                case "storage" -> BenchRuneType.ARMAZENAMENTO;
-                case "ruin" -> BenchRuneType.RUINA;
-                default -> BenchRuneType.NONE;
-            };
-        }
-
         if (rune.is(ModItems.RUNA_DA_COLHEITA.get())) {
             return BenchRuneType.COLHEITA;
         }
@@ -236,14 +224,6 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
             return BenchRuneType.RUINA;
         }
         return BenchRuneType.NONE;
-    }
-
-    private int getInstalledRunePotency() {
-        ItemStack rune = getInstalledRune();
-        if (rune.hasTag() && rune.getTag() != null && rune.getTag().contains(CUSTOM_POTENCY_KEY)) {
-            return Mth.clamp(rune.getTag().getInt(CUSTOM_POTENCY_KEY), 1, 5);
-        }
-        return 1;
     }
 
     private void pullLinkedCatalystEnergy() {
@@ -312,8 +292,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
     private void pullEnergy(ServerLevel level) {
         int maxPull = RuinaArcanaConfig.VALUES.harvestBenchPullPerPulse.get();
         if (getInstalledRuneType() == BenchRuneType.FLUXO && consumeInstalledRuneCharge(4)) {
-            int potency = getInstalledRunePotency();
-            maxPull += Math.max(1, (maxPull / 2) + (potency * 4));
+            maxPull += Math.max(1, maxPull / 2);
         }
         int room = Math.max(0, getMaxCharge() - charge);
 
@@ -368,14 +347,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
         int radius = getWorkRange();
         int baseCost = RuinaArcanaConfig.VALUES.harvestBenchCropEnergyCost.get();
         boolean harvestRuneBoost = getInstalledRuneType() == BenchRuneType.COLHEITA && consumeInstalledRuneCharge(1);
-        int cost;
-        if (harvestRuneBoost) {
-            int potency = getInstalledRunePotency();
-            double modifier = Math.max(0.35D, 0.6D - (potency - 1) * 0.05D);
-            cost = Math.max(1, (int) Math.floor(baseCost * modifier));
-        } else {
-            cost = baseCost;
-        }
+        int cost = harvestRuneBoost ? Math.max(1, (int) Math.floor(baseCost * 0.6D)) : baseCost;
 
         for (BlockPos pos : BlockPos.betweenClosed(
                 worldPosition.offset(-radius, -1, -radius),
@@ -431,14 +403,7 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
     private void harvestAnimals(ServerLevel level) {
         int baseCost = RuinaArcanaConfig.VALUES.harvestBenchAnimalEnergyCost.get();
         boolean vitalityRuneBoost = getInstalledRuneType() == BenchRuneType.VITALIDADE && consumeInstalledRuneCharge(2);
-        int cost;
-        if (vitalityRuneBoost) {
-            int potency = getInstalledRunePotency();
-            double modifier = Math.max(0.4D, 0.65D - (potency - 1) * 0.05D);
-            cost = Math.max(1, (int) Math.floor(baseCost * modifier));
-        } else {
-            cost = baseCost;
-        }
+        int cost = vitalityRuneBoost ? Math.max(1, (int) Math.floor(baseCost * 0.65D)) : baseCost;
         if (charge < cost) {
             return;
         }
@@ -531,9 +496,8 @@ public class ArcaneHarvestBenchBlockEntity extends BlockEntity implements MenuPr
         int remainingItemBudget = RuinaArcanaConfig.VALUES.harvestBenchTeleportItemsPerPulse.get();
         int energyPerItem = Math.max(1, RuinaArcanaConfig.VALUES.harvestBenchTeleportEnergyPerItem.get());
         if (getInstalledRuneType() == BenchRuneType.ARMAZENAMENTO && consumeInstalledRuneCharge(3)) {
-            int potency = getInstalledRunePotency();
-            remainingItemBudget += 8 + (potency * 2);
-            energyPerItem = Math.max(1, energyPerItem - potency);
+            remainingItemBudget += 8;
+            energyPerItem = Math.max(1, energyPerItem - 1);
         }
 
         for (int slot = 0; slot < inventory.getSlots(); slot++) {

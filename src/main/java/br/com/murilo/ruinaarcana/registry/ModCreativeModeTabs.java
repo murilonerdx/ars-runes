@@ -29,7 +29,6 @@ public final class ModCreativeModeTabs {
                         output.accept(ModItems.VINCULO_ASTRAL.get());
                         output.accept(ModItems.GRIMORIO_ARCANO.get());
                         output.accept(ModItems.CODEX_RUNICO.get());
-                        output.accept(ModItems.JARRO_ARCANO.get());
 
                         output.accept(ModItems.ALTAR_RITUAL.get());
                         output.accept(ModItems.BATERIA_ARCANA.get());

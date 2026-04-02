@@ -7,7 +7,6 @@ import br.com.murilo.ruinaarcana.item.CodexRunicoItem;
 import br.com.murilo.ruinaarcana.item.EntropyRuneItem;
 import br.com.murilo.ruinaarcana.item.FarmRuneItem;
 import br.com.murilo.ruinaarcana.item.GrimorioArcanoItem;
-import br.com.murilo.ruinaarcana.item.JarroArcanoItem;
 import br.com.murilo.ruinaarcana.item.MagicCatalystItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -79,11 +78,6 @@ public final class ModItems {
             () -> new CodexRunicoItem(new Item.Properties()
                     .stacksTo(1)
                     .rarity(Rarity.UNCOMMON)));
-
-    public static final RegistryObject<Item> JARRO_ARCANO = ITEMS.register("jarro_arcano",
-            () -> new JarroArcanoItem(new Item.Properties()
-                    .stacksTo(1)
-                    .rarity(Rarity.RARE)));
 
     public static final RegistryObject<Item> ALTAR_RITUAL = ITEMS.register("altar_ritual",
             () -> new BlockItem(ModBlocks.ALTAR_RITUAL.get(), new Item.Properties().rarity(Rarity.UNCOMMON)));
