@@ -33,10 +33,10 @@ public final class ModCreativeModeTabs {
                         output.accept(ModItems.CODEX_RITUAIS.get());
                         output.accept(ModItems.CODEX_ARTEFATOS.get());
                         output.accept(ModItems.CODEX_PROGRESSAO.get());
-                        output.accept(CodexRunicoItem.createGuideBook());
-                        output.accept(CodexRunicoItem.createRitualGuideBook());
-                        output.accept(CodexRunicoItem.createArtifactGuideBook());
-                        output.accept(CodexRunicoItem.createProgressionGuideBook());
+                        addGuideIfValid(output, CodexRunicoItem.createGuideBook());
+                        addGuideIfValid(output, CodexRunicoItem.createRitualGuideBook());
+                        addGuideIfValid(output, CodexRunicoItem.createArtifactGuideBook());
+                        addGuideIfValid(output, CodexRunicoItem.createProgressionGuideBook());
 
                         output.accept(ModItems.ALTAR_RITUAL.get());
                         output.accept(ModItems.BATERIA_ARCANA.get());
@@ -50,6 +50,16 @@ public final class ModCreativeModeTabs {
                         output.accept(ModItems.SIGILO_ESSENCIA.get());
                     })
                     .build());
+
+    private static void addGuideIfValid(CreativeModeTab.Output output, ItemStack stack) {
+        if (stack.isEmpty()) {
+            return;
+        }
+
+        ItemStack single = stack.copy();
+        single.setCount(1);
+        output.accept(single);
+    }
 
     private ModCreativeModeTabs() {
     }
